@@ -8,7 +8,6 @@ import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.model.crypto.IssuerData;
 import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.model.crypto.SubjectData;
-import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;
 import com.myhouse.MyHouse.util.CertificateGenerator;
 import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
@@ -17,13 +16,11 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.*;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 public class CertificateService {
@@ -117,13 +114,8 @@ public class CertificateService {
         CertificateRequest certificateRequest = certificateRequestService.getCertificateRequestById("642a11c667e20170c316e502");
         certificateInfoService.createRootCertificateInfo(newCertificateDataDTO, certificateRequest);
     }
+
     public CertificateInfo invalidate(String id) {
-        Optional<CertificateInfo> optional = certificateInfoRepository.findById(id);
-        if (optional.isEmpty()) {
-            throw new NoSuchElementException();
-        }
-        CertificateInfo certificateInfo = optional.get();
-        certificateInfo.setPulled(true);
-        return certificateInfoRepository.save(certificateInfo);
+        return certificateInfoService.invalidate(id);
     }
 }
