@@ -159,4 +159,8 @@ public class CertificateService {
         CertificateRequest certificateRequest = certificateRequestService.getCertificateRequestById("642a11c667e20170c316e502");
         certificateInfoService.createRootCertificateInfo(newCertificateDataDTO, certificateRequest);
     }
+
+    public CertificateInfo invalidate(String id) {
+        return certificateInfoService.invalidate(id);
+    }
 }

@@ -48,12 +48,16 @@ public class CertificateController {
         certificateService.createCertificateInfo(certificateInfoDTO);
     }
 
-
     @GetMapping(path = "alias")
     public ResponseEntity<?> getAllKeyStoreAlias() throws KeyStoreException {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore("myHouseKeyStore.jks");
         return ResponseEntity.ok(keyStoreManager.aliases());
+    }
+
+    @PutMapping(path = "invalidate/{id}")
+    public ResponseEntity<?> invalidate(@PathVariable String id){
+        return ResponseEntity.ok(certificateService.invalidate(id));
     }
 
     @GetMapping(path = "issuer")

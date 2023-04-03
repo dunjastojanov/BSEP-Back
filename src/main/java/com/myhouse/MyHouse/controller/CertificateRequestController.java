@@ -27,9 +27,14 @@ public class CertificateRequestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @GetMapping(path = "all")
+    @GetMapping
     public ResponseEntity<?> getAllClientRequests() {
         return ResponseEntity.ok(certificateRequestService.getAllCertificateRequests());
+    }
+
+    @GetMapping(path = "{id}")
+    public ResponseEntity<?> getClientRequest(@PathVariable String id) {
+        return ResponseEntity.ok(certificateRequestService.getCertificateRequest(id));
     }
 
 }
