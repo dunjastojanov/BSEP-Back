@@ -18,6 +18,9 @@ import java.security.cert.CertificateException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class CertificateInfoService {
@@ -124,4 +127,17 @@ public class CertificateInfoService {
                 || isCertificateExpired(rootCertificate);
     }
 
+    public CertificateInfo invalidate(String id) {
+        Optional<CertificateInfo> optional = certificateInfoRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        CertificateInfo certificateInfo = optional.get();
+        certificateInfo.setPulled(true);
+        return certificateInfoRepository.save(certificateInfo);
+    }
+
+    public List<CertificateInfo> getAll() {
+        return certificateInfoRepository.findAll();
+    }
 }

@@ -1,11 +1,9 @@
 package com.myhouse.MyHouse.util;
 
 import lombok.NoArgsConstructor;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -57,6 +55,21 @@ public class CertificateReader {
         } catch (FileNotFoundException | CertificateException e) {
             e.printStackTrace();
         }
+    }
 
+    public static String getPemFromCertAlias(String alias) throws IOException {
+        KeyStoreManager keyStore = new KeyStoreManager();
+        keyStore.loadDefaultKeyStore();
+        Certificate cert = keyStore.readCertificate(alias);
+        return certificateToPem(cert);
+    }
+
+    public static String certificateToPem(final Certificate cert) throws IOException {
+        final StringWriter writer = new StringWriter();
+        final JcaPEMWriter pemWriter = new JcaPEMWriter(writer);
+        pemWriter.writeObject(cert);
+        pemWriter.flush();
+        pemWriter.close();
+        return writer.toString();
     }
 }

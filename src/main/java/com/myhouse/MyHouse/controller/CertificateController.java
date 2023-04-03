@@ -1,14 +1,10 @@
 package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.CertificateInfoDTO;
-import com.myhouse.MyHouse.dto.CertificateRequestDTO;
 import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
-import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.service.CertificateService;
-import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +18,11 @@ public class CertificateController {
     @Autowired
     private CertificateService certificateService;
 
+    @GetMapping
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(certificateService.getAll());
+    }
+
     @PostMapping
     public ResponseEntity<?> createNewCertificate(@RequestBody NewCertificateDataDTO newCertificateDataDTO) {
         return ResponseEntity.ok(certificateService.createNewCertificate(newCertificateDataDTO));
@@ -32,19 +33,22 @@ public class CertificateController {
         return ResponseEntity.ok(certificateService.verifyCertificate(alias));
     }
 
-
-    @GetMapping
+    @GetMapping("/keystore")
     public void loadKeyStore(@RequestParam String fileName) {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore(fileName);
     }
-
-
+    @PostMapping(path = "distribute")
+    public ResponseEntity<?> distributeCert(@RequestParam String userEmail) {
+        if(certificateService.distributeCertificate(userEmail))
+            return ResponseEntity.ok().build();
+        else
+            return ResponseEntity.badRequest().build();
+    }
     @PostMapping(path = "info")
     public void createCertificateInfo(@RequestBody CertificateInfoDTO certificateInfoDTO) throws ParseException {
         certificateService.createCertificateInfo(certificateInfoDTO);
     }
-
 
     @GetMapping(path = "alias")
     public ResponseEntity<?> getAllKeyStoreAlias() throws KeyStoreException {
@@ -53,8 +57,13 @@ public class CertificateController {
         return ResponseEntity.ok(keyStoreManager.aliases());
     }
 
+    @PutMapping(path = "invalidate/{id}")
+    public ResponseEntity<?> invalidate(@PathVariable String id){
+        return ResponseEntity.ok(certificateService.invalidate(id));
+    }
+
     @GetMapping(path = "issuer")
-    public ResponseEntity<?> getIssuerPrivateKey()  {
+    public ResponseEntity<?> getIssuerPrivateKey() {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore("myHouseKeyStore.jks");
         return ResponseEntity.ok(keyStoreManager.readPrivateKey("root"));

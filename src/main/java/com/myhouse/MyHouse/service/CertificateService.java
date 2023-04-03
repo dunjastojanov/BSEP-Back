@@ -1,6 +1,7 @@
 package com.myhouse.MyHouse.service;
 
 import com.myhouse.MyHouse.dto.CertificateInfoDTO;
+import com.myhouse.MyHouse.dto.CertificateInsight;
 import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
 import com.myhouse.MyHouse.model.CertificateInfo;
 import com.myhouse.MyHouse.model.CertificateRequest;
@@ -8,28 +9,40 @@ import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.model.crypto.IssuerData;
 import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.model.crypto.SubjectData;
-import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;
 import com.myhouse.MyHouse.util.CertificateGenerator;
+import com.myhouse.MyHouse.util.CertificateReader;
 import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CertificateService {
 
     @Autowired
     private CertificateRequestService certificateRequestService;
     @Autowired
     private UserService userService;
+
+    private final MailService mailService;
 
     @Autowired
     private CertificateInfoService certificateInfoService;
@@ -92,6 +105,38 @@ public class CertificateService {
         return builder;
     }
 
+    public boolean distributeCertificate(String userEmail) {
+        User user = Optional.ofNullable(userService.getUserByEmail(userEmail)).orElseThrow();
+
+        CertificateInfo certInfo = Optional.ofNullable(
+                certificateInfoService.getCertificateByAlias(
+                        user.getEmail())).orElseThrow();
+
+        String fileName = String.format("./temp/%s.cer", user.getId());
+        File userCert = new File(fileName);
+        if (!userCert.getParentFile().exists())
+            userCert.getParentFile().mkdirs();
+        try {
+            if (userCert.createNewFile()) {
+                String pemCertificate = CertificateReader.getPemFromCertAlias(certInfo.getAlias());
+                BufferedWriter writer = new BufferedWriter(new FileWriter(userCert));
+                writer.write(pemCertificate);
+                writer.close();
+                mailService.sendCertificate(user.getEmail(), user.getName(), fileName);
+                return userCert.delete();
+            } else {
+                return false;
+            }
+        } catch (MessagingException e) {
+            e.printStackTrace();
+            userCert.delete();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean verifyCertificate(String alias) {
         CertificateInfo certificateInfo = certificateInfoService.getCertificateByAlias(alias);
         if (certificateInfoService.isCertificateExpired(certificateInfo))
@@ -114,5 +159,42 @@ public class CertificateService {
         newCertificateDataDTO.setValidFrom(certificateInfoDTO.getValidFrom());
         CertificateRequest certificateRequest = certificateRequestService.getCertificateRequestById("642a11c667e20170c316e502");
         certificateInfoService.createRootCertificateInfo(newCertificateDataDTO, certificateRequest);
+    }
+
+    public CertificateInfo invalidate(String id) {
+        return certificateInfoService.invalidate(id);
+    }
+
+    public List<CertificateInsight> getAll() {
+        List<CertificateInsight> certificates = new ArrayList<>();
+        certificateInfoService.getAll().forEach(certificateInfo -> {
+            if (!certificateInfo.getParentAlias().equals("root") && !certificateInfo.getParentAlias().equals("")) {
+                CertificateInsight certificateInsight = getCertificateInsight(certificateInfo);
+                certificates.add(certificateInsight);
+            }
+        });
+        return certificates;
+    }
+
+    private CertificateInsight getCertificateInsight(CertificateInfo certificateInfo) {
+        CertificateInsight certificateInsight = new CertificateInsight();
+
+        certificateInsight.setCommonName(certificateInfo.getIssuedFor().getCommonName());
+        certificateInsight.setOrganization(certificateInfo.getIssuedFor().getOrganizationName());
+        certificateInsight.setOrganizationUnit(certificateInfo.getIssuedFor().getOrganizationUnit());
+
+        certificateInsight.setParentCommonName(certificateInfo.getIssuedBy().getCommonName());
+        certificateInsight.setParentOrganization(certificateInfo.getIssuedBy().getOrganizationName());
+        certificateInsight.setParentOrganizationUnit(certificateInfo.getIssuedBy().getOrganizationUnit());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        certificateInsight.setValidTo(dateFormat.format(certificateInfo.getValidTo()));
+        certificateInsight.setValidFrom(dateFormat.format(certificateInfo.getValidFrom()));
+
+        certificateInsight.setAlias(certificateInfo.getAlias());
+        certificateInsight.setId(certificateInfo.getId());
+
+        certificateInsight.setVerified(verifyCertificate(certificateInfo.getAlias()));
+        return certificateInsight;
     }
 }
