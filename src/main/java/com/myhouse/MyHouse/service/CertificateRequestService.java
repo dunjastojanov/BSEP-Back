@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class CertificateRequestService {
@@ -50,5 +52,13 @@ public class CertificateRequestService {
         certificateRejectionReason.setCertificateRequestId(certificateRequest.getId());
         certificateRejectionReason.setReason(rejectionReasonDTO.getReason());
         certificateRejectionReasonRepository.save(certificateRejectionReason);
+    }
+
+    public CertificateRequest getCertificateRequest(String id) {
+        Optional<CertificateRequest> optional = certificateRequestRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return optional.get();
     }
 }
