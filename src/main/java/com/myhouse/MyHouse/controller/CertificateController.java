@@ -46,13 +46,6 @@ public class CertificateController {
     }
 
 
-//    @GetMapping(path = "algo")
-//    public ResponseEntity<?> keyAlgo(@RequestBody CertificateRequestDTO certificateRequestDTO) {
-//        KeyAlgorithmService.generateKeyPair(KeyAlgorithmType.valueOf(certificateRequestDTO.getKeyAlgorithm()), certificateRequestDTO.getKeyLength());
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
-
-
     @GetMapping(path = "alias")
     public ResponseEntity<?> getAllKeyStoreAlias() throws KeyStoreException {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
