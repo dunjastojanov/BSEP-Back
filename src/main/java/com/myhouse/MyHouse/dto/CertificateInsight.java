@@ -21,5 +21,6 @@ public class CertificateInsight {
 
     private String alias;
 
+    private String id;
     private boolean verified;
 }

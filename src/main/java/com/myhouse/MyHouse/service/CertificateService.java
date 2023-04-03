@@ -20,7 +20,6 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -29,7 +28,9 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -113,7 +114,7 @@ public class CertificateService {
 
         String fileName = String.format("./temp/%s.cer", user.getId());
         File userCert = new File(fileName);
-        if(!userCert.getParentFile().exists())
+        if (!userCert.getParentFile().exists())
             userCert.getParentFile().mkdirs();
         try {
             if (userCert.createNewFile()) {
@@ -135,6 +136,7 @@ public class CertificateService {
             return false;
         }
     }
+
     public boolean verifyCertificate(String alias) {
         CertificateInfo certificateInfo = certificateInfoService.getCertificateByAlias(alias);
         if (certificateInfoService.isCertificateExpired(certificateInfo))
@@ -179,16 +181,18 @@ public class CertificateService {
 
         certificateInsight.setCommonName(certificateInfo.getIssuedFor().getCommonName());
         certificateInsight.setOrganization(certificateInfo.getIssuedFor().getOrganizationName());
-        certificateInsight.setOrganizationUnit(certificateInfo.getIssuedBy().getOrganizationUnit());
+        certificateInsight.setOrganizationUnit(certificateInfo.getIssuedFor().getOrganizationUnit());
 
         certificateInsight.setParentCommonName(certificateInfo.getIssuedBy().getCommonName());
         certificateInsight.setParentOrganization(certificateInfo.getIssuedBy().getOrganizationName());
         certificateInsight.setParentOrganizationUnit(certificateInfo.getIssuedBy().getOrganizationUnit());
 
-        certificateInsight.setValidTo(certificateInsight.getValidTo());
-        certificateInsight.setValidFrom(certificateInsight.getValidFrom());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        certificateInsight.setValidTo(dateFormat.format(certificateInfo.getValidTo()));
+        certificateInsight.setValidFrom(dateFormat.format(certificateInfo.getValidFrom()));
 
         certificateInsight.setAlias(certificateInfo.getAlias());
+        certificateInsight.setId(certificateInfo.getId());
 
         certificateInsight.setVerified(verifyCertificate(certificateInfo.getAlias()));
         return certificateInsight;
