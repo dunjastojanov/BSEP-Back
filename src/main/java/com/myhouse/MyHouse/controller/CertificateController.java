@@ -37,4 +37,9 @@ public class CertificateController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PutMapping(path = "invalidate/{id}")
+    public ResponseEntity<?> invalidate(@PathVariable String id){
+        return ResponseEntity.ok(certificateService.invalidate(id));
+    }
+
 }

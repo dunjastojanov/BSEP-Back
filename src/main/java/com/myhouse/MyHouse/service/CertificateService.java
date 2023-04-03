@@ -20,6 +20,8 @@ import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class CertificateService {
@@ -97,4 +99,13 @@ public class CertificateService {
         return builder;
     }
 
+    public CertificateInfo invalidate(String id) {
+        Optional<CertificateInfo> optional = certificateInfoRepository.findById(id);
+        if (optional.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        CertificateInfo certificateInfo = optional.get();
+        certificateInfo.setPulled(true);
+        return certificateInfoRepository.save(certificateInfo);
+    }
 }
