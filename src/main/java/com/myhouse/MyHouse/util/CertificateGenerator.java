@@ -71,11 +71,7 @@ public class CertificateGenerator {
     }
 
     private void addExtensions(X509v3CertificateBuilder certGen, List<String> extensions) throws CertIOException {
-        if (extensions.contains(CertificateExtensions.AUTHORITY_KEY_IDENTIFIER.name())) {
-            AuthorityInformationAccess authorityInformationAccess = new AuthorityInformationAccess(AccessDescription.id_ad_ocsp,
-                    new GeneralName(GeneralName.dNSName, "certificate"));
-            certGen.addExtension(Extension.authorityKeyIdentifier, false, authorityInformationAccess);
-        } if (extensions.contains(CertificateExtensions.BASIC_CONSTRAINTS.name())) {
+        if (extensions.contains(CertificateExtensions.BASIC_CONSTRAINTS.name())) {
             certGen.addExtension(Extension.basicConstraints, false, new BasicConstraints(false));
         }  if (extensions.contains(CertificateExtensions.KEY_USAGE.name())) {
             certGen.addExtension(Extension.keyUsage, false, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
