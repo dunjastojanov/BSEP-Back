@@ -15,9 +15,12 @@ import java.util.Date;
 public class CertificateInfo {
     @Id
     private String id;
+    private String serialNumber;
     private String parentAlias;
     private Date validFrom;
     private Date validTo;
     private boolean pulled;
     private String alias;
+    private Organization issuedBy;
+    private Organization issuedFor;
 }

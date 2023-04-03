@@ -20,6 +20,4 @@ public class CertificateRequest {
     private String organizationName;
     private String country;
     private String email;
-    private KeyAlgorithmType keyAlgorithmType;
-    private int keySize;
 }

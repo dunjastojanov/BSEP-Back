@@ -19,8 +19,8 @@ import java.util.Iterator;
 @NoArgsConstructor
 public class CertificateReader {
 
-//    public static final String BASE64_ENC_CERT_FILE = "./data/proba1.cer";
-//    public static final String BIN_ENC_CERT_FILE = "./data/proba.cer";
+    public static final String ROOT_CERTIFICATE_ALIAS = "root";
+
 
     private void readFromBase64EncFile(String filePath) {
         try {

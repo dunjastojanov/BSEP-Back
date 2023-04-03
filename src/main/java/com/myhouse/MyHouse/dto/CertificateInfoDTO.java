@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class CertificateRequestDTO {
-    private String organizationUnit;
-    private String organizationName;
-    private String country;
-    private String email;
+public class CertificateInfoDTO {
+    private String parentAlias;
+    private String validFrom;
+    private String validTo;
+    private String alias;
 }

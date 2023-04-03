@@ -1,12 +1,14 @@
 package com.myhouse.MyHouse.service;
 
+import com.myhouse.MyHouse.dto.CertificateInfoDTO;
 import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
 import com.myhouse.MyHouse.model.CertificateInfo;
 import com.myhouse.MyHouse.model.CertificateRequest;
 import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.model.crypto.IssuerData;
+import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.model.crypto.SubjectData;
-import com.myhouse.MyHouse.repository.CertificateInfoRepository;
+import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;
 import com.myhouse.MyHouse.util.CertificateGenerator;
 import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
@@ -15,7 +17,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.KeyPair;
+import java.security.*;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,16 +27,22 @@ import java.util.Date;
 public class CertificateService {
 
     @Autowired
-    private CertificateInfoRepository certificateInfoRepository;
-
-    @Autowired
     private CertificateRequestService certificateRequestService;
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private CertificateInfoService certificateInfoService;
 
     public Object createNewCertificate(NewCertificateDataDTO newCertificateDataDTO) {
+        if (certificateInfoService.getCertificateByAlias(newCertificateDataDTO.getCertificateAlias()) != null) {
+            return null;
+        }
         CertificateRequest certificateRequest = certificateRequestService.getCertificateRequestById(newCertificateDataDTO.getCertificateRequestId());
+        if (certificateRequest.isResolved()) {
+            return null;
+        }
+        certificateRequestService.resolveCertificate(certificateRequest);
         SubjectData subjectData = createSubjectData(certificateRequest, newCertificateDataDTO);
         if (subjectData == null)
             return null;
@@ -43,7 +51,7 @@ public class CertificateService {
         X509Certificate x509Certificate = certificateGenerator.generateCertificate(subjectData, issuerData, newCertificateDataDTO.getExtensions());
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadDefaultKeyStore();
-        keyStoreManager.write(certificateRequest.getEmail(), issuerData.getPrivateKey(), x509Certificate);
+        keyStoreManager.write(newCertificateDataDTO.getCertificateAlias(), issuerData.getPrivateKey(), x509Certificate);
         keyStoreManager.saveKeyStore();
         return null;
     }
@@ -55,31 +63,18 @@ public class CertificateService {
 
     private SubjectData createSubjectData(CertificateRequest certificateRequest, NewCertificateDataDTO newCertificateDataDTO) {
         try {
-            KeyPair keyPairSubject = KeyAlgorithmService.generateKeyPair(certificateRequest.getKeyAlgorithmType(), certificateRequest.getKeySize());
+            KeyPair keyPairSubject = KeyAlgorithmService.generateKeyPair(KeyAlgorithmType.RSA, 2048);
             SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
             Date startDate = iso8601Formater.parse(newCertificateDataDTO.getValidFrom());
             Date endDate = iso8601Formater.parse(newCertificateDataDTO.getValidTo());
-            String serialNumber = createCertificateInfo(newCertificateDataDTO);
             X500NameBuilder builder = generateX500NameBuilder(certificateRequest);
+            certificateInfoService.createCertificateInfo(newCertificateDataDTO, certificateRequest);
+            String serialNumber = certificateInfoService.getCertificateSerialNumber();
             return new SubjectData(keyPairSubject.getPublic(), builder.build(), serialNumber, startDate, endDate);
         } catch (ParseException e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    private String createCertificateInfo(NewCertificateDataDTO newCertificateDataDTO) throws ParseException {
-        SimpleDateFormat iso8601Formater = new SimpleDateFormat("yyyy-MM-dd");
-        Date startDate = iso8601Formater.parse(newCertificateDataDTO.getValidFrom());
-        Date endDate = iso8601Formater.parse(newCertificateDataDTO.getValidTo());
-        CertificateInfo certificateInfo = new CertificateInfo();
-        certificateInfo.setPulled(false);
-        certificateInfo.setAlias(newCertificateDataDTO.getCertificateAlias());
-        certificateInfo.setParentAlias(newCertificateDataDTO.getParentCertificateAlias());
-        certificateInfo.setValidTo(endDate);
-        certificateInfo.setValidFrom(startDate);
-        certificateInfoRepository.save(certificateInfo);
-        return certificateInfo.getId();
     }
 
 
@@ -97,4 +92,27 @@ public class CertificateService {
         return builder;
     }
 
+    public boolean verifyCertificate(String alias) {
+        CertificateInfo certificateInfo = certificateInfoService.getCertificateByAlias(alias);
+        if (certificateInfoService.isCertificateExpired(certificateInfo))
+            return false;
+        else if (certificateInfoService.isCertificatePulled(certificateInfo)) {
+            return false;
+        } else if (certificateInfoService.isAnyCertificateFromCertificateChainPulledOrExpired(certificateInfo))
+            return false;
+        else if (certificateInfoService.isCertificateChainSignatureInvalid(certificateInfo)) {
+            return false;
+        }
+        return true;
+    }
+
+    public void createCertificateInfo(CertificateInfoDTO certificateInfoDTO) throws ParseException {
+        NewCertificateDataDTO newCertificateDataDTO = new NewCertificateDataDTO();
+        newCertificateDataDTO.setCertificateAlias(certificateInfoDTO.getAlias());
+        newCertificateDataDTO.setParentCertificateAlias(certificateInfoDTO.getParentAlias());
+        newCertificateDataDTO.setValidTo(certificateInfoDTO.getValidTo());
+        newCertificateDataDTO.setValidFrom(certificateInfoDTO.getValidFrom());
+        CertificateRequest certificateRequest = certificateRequestService.getCertificateRequestById("642a11c667e20170c316e502");
+        certificateInfoService.createRootCertificateInfo(newCertificateDataDTO, certificateRequest);
+    }
 }

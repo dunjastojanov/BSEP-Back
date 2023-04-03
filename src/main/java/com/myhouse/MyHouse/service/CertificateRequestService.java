@@ -29,9 +29,7 @@ public class CertificateRequestService {
         CertificateRequest certificateRequest = new CertificateRequest();
         certificateRequest.setEmail(certificateRequestDTO.getEmail());
         certificateRequest.setCountry(certificateRequestDTO.getCountry());
-        certificateRequest.setKeyAlgorithmType(KeyAlgorithmType.valueOf(certificateRequestDTO.getKeyAlgorithm()));
         certificateRequest.setResolved(false);
-        certificateRequest.setKeySize(certificateRequestDTO.getKeyLength());
         certificateRequest.setOrganizationName(certificateRequestDTO.getOrganizationName());
         certificateRequest.setOrganizationUnit(certificateRequestDTO.getOrganizationUnit());
         certificateRequestRepository.save(certificateRequest);
@@ -50,5 +48,10 @@ public class CertificateRequestService {
         certificateRejectionReason.setCertificateRequestId(certificateRequest.getId());
         certificateRejectionReason.setReason(rejectionReasonDTO.getReason());
         certificateRejectionReasonRepository.save(certificateRejectionReason);
+    }
+
+    public void resolveCertificate(CertificateRequest certificateRequest) {
+        certificateRequest.setResolved(true);
+        certificateRequestRepository.save(certificateRequest);
     }
 }
