@@ -17,7 +17,7 @@ public class KeyStoreManager {
 
     private KeyStore keyStore;
     private static final char[] KEYSTORE_PASSWORD = "password".toCharArray();
-    private static final String KEYSTORE_FILEPATH = "keystore/myHouseKeystore.jks";
+    private static final String KEYSTORE_FILEPATH = "keystore/myHouseKeyStore.jks";
 
     private static final String KEYSTORE_FOLDER_PATH = "keystore/";
 
@@ -49,7 +49,7 @@ public class KeyStoreManager {
             // Datoteka se ucitava
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(KEYSTORE_FILEPATH));
             keyStore.load(in, KEYSTORE_PASSWORD);
-
+            in.close();
             // Iscitava se sertifikat koji ima dati alias
             Certificate cert = keyStore.getCertificate(alias);
 
@@ -75,7 +75,7 @@ public class KeyStoreManager {
             // ucitavamo podatke
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(KEYSTORE_FILEPATH));
             ks.load(in, KEYSTORE_PASSWORD);
-
+            in.close();
             if (ks.isKeyEntry(alias)) {
                 Certificate cert = ks.getCertificate(alias);
                 return cert;
@@ -97,7 +97,7 @@ public class KeyStoreManager {
             // ucitavamo podatke
             BufferedInputStream in = new BufferedInputStream(new FileInputStream(KEYSTORE_FILEPATH));
             ks.load(in, KEYSTORE_PASSWORD);
-
+            in.close();
             if (ks.isKeyEntry(alias)) {
                 PrivateKey pk = (PrivateKey) ks.getKey(alias, KEYSTORE_PASSWORD);
                 return pk;
@@ -145,5 +145,9 @@ public class KeyStoreManager {
         } catch (KeyStoreException e) {
             e.printStackTrace();
         }
+    }
+
+    public java.util.Enumeration<String> aliases() throws KeyStoreException {
+        return this.keyStore.aliases();
     }
 }

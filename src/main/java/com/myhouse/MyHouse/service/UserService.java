@@ -15,6 +15,8 @@ public class UserService {
     private UserRepository userRepository;
 
     public void createUser(RegistrationDTO registrationDTO) {
+        if (getUserByEmail(registrationDTO.getEmail()) != null)
+            return;
         User user = new User();
         user.setName(registrationDTO.getName());
         user.setEmail(registrationDTO.getEmail());
