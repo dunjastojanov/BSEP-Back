@@ -35,6 +35,13 @@ public class CertificateController {
         keyStoreManager.loadKeyStore(fileName);
     }
 
+    @PostMapping(path = "distribute")
+    public ResponseEntity<?> distributeCert(@RequestParam String userEmail) {
+        if(certificateService.distributeCertificate(userEmail))
+            return ResponseEntity.ok().build();
+        else
+            return ResponseEntity.badRequest().build();
+    }
 
     @PostMapping(path = "info")
     public void createCertificateInfo(@RequestBody CertificateInfoDTO certificateInfoDTO) throws ParseException {
@@ -54,7 +61,7 @@ public class CertificateController {
     }
 
     @GetMapping(path = "issuer")
-    public ResponseEntity<?> getIssuerPrivateKey()  {
+    public ResponseEntity<?> getIssuerPrivateKey() {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore("myHouseKeyStore.jks");
         return ResponseEntity.ok(keyStoreManager.readPrivateKey("root"));

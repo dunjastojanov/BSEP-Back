@@ -5,14 +5,18 @@ import com.myhouse.MyHouse.dto.RegistrationDTO;
 import com.myhouse.MyHouse.dto.UserDTO;
 import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private final MailService mailService;
 
     public void createUser(RegistrationDTO registrationDTO) {
         if (getUserByEmail(registrationDTO.getEmail()) != null)
@@ -23,6 +27,7 @@ public class UserService {
         user.setPassword(registrationDTO.getPassword());
         user.setSurname(registrationDTO.getSurname());
         userRepository.save(user);
+        mailService.sendWelcomeEmail(user.getEmail(), user.getName(), user.getSurname());
     }
 
     public User getUserByEmail(String email) {

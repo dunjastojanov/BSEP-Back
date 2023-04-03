@@ -9,26 +9,37 @@ import com.myhouse.MyHouse.model.crypto.IssuerData;
 import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.model.crypto.SubjectData;
 import com.myhouse.MyHouse.util.CertificateGenerator;
+import com.myhouse.MyHouse.util.CertificateReader;
 import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CertificateService {
 
     @Autowired
     private CertificateRequestService certificateRequestService;
     @Autowired
     private UserService userService;
+
+    private final MailService mailService;
 
     @Autowired
     private CertificateInfoService certificateInfoService;
@@ -91,6 +102,40 @@ public class CertificateService {
         return builder;
     }
 
+    public boolean distributeCertificate(String userEmail) {
+        User user = Optional.ofNullable(userService.getUserByEmail(userEmail)).orElseThrow();
+
+        CertificateInfo certInfo = Optional.ofNullable(
+                certificateInfoService.getCertificateByAlias(
+                        user.getEmail())).orElseThrow();
+
+        // TODO: add getting certificate by user email
+        String fileName = String.format("./temp/%s.cer", user.getId());
+        File userCert = new File(fileName);
+        // TODO: add certificate file generation
+        if(!userCert.getParentFile().exists())
+            userCert.getParentFile().mkdirs();
+        try {
+            if (userCert.createNewFile()) {
+                String pemCertificate = CertificateReader.getPemFromCertAlias(certInfo.getAlias());
+                BufferedWriter writer = new BufferedWriter(new FileWriter(userCert));
+                writer.write(pemCertificate);
+                writer.close();
+                mailService.sendCertificate(user.getEmail(), user.getName(), fileName);
+                return userCert.delete();
+            } else {
+                return false;
+            }
+        } catch (MessagingException e) {
+            // TODO: log errors appropreately
+            e.printStackTrace();
+            userCert.delete();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public boolean verifyCertificate(String alias) {
         CertificateInfo certificateInfo = certificateInfoService.getCertificateByAlias(alias);
         if (certificateInfoService.isCertificateExpired(certificateInfo))
