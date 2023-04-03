@@ -18,6 +18,7 @@ import java.security.cert.CertificateException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -134,5 +135,9 @@ public class CertificateInfoService {
         CertificateInfo certificateInfo = optional.get();
         certificateInfo.setPulled(true);
         return certificateInfoRepository.save(certificateInfo);
+    }
+
+    public List<CertificateInfo> getAll() {
+        return certificateInfoRepository.findAll();
     }
 }

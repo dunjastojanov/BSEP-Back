@@ -1,6 +1,7 @@
 package com.myhouse.MyHouse.service;
 
 import com.myhouse.MyHouse.dto.CertificateInfoDTO;
+import com.myhouse.MyHouse.dto.CertificateInsight;
 import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
 import com.myhouse.MyHouse.model.CertificateInfo;
 import com.myhouse.MyHouse.model.CertificateRequest;
@@ -19,6 +20,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -109,10 +111,8 @@ public class CertificateService {
                 certificateInfoService.getCertificateByAlias(
                         user.getEmail())).orElseThrow();
 
-        // TODO: add getting certificate by user email
         String fileName = String.format("./temp/%s.cer", user.getId());
         File userCert = new File(fileName);
-        // TODO: add certificate file generation
         if(!userCert.getParentFile().exists())
             userCert.getParentFile().mkdirs();
         try {
@@ -127,7 +127,6 @@ public class CertificateService {
                 return false;
             }
         } catch (MessagingException e) {
-            // TODO: log errors appropreately
             e.printStackTrace();
             userCert.delete();
             return false;
@@ -162,5 +161,36 @@ public class CertificateService {
 
     public CertificateInfo invalidate(String id) {
         return certificateInfoService.invalidate(id);
+    }
+
+    public List<CertificateInsight> getAll() {
+        List<CertificateInsight> certificates = new ArrayList<>();
+        certificateInfoService.getAll().forEach(certificateInfo -> {
+            if (!certificateInfo.getParentAlias().equals("root") && !certificateInfo.getParentAlias().equals("")) {
+                CertificateInsight certificateInsight = getCertificateInsight(certificateInfo);
+                certificates.add(certificateInsight);
+            }
+        });
+        return certificates;
+    }
+
+    private CertificateInsight getCertificateInsight(CertificateInfo certificateInfo) {
+        CertificateInsight certificateInsight = new CertificateInsight();
+
+        certificateInsight.setCommonName(certificateInfo.getIssuedFor().getCommonName());
+        certificateInsight.setOrganization(certificateInfo.getIssuedFor().getOrganizationName());
+        certificateInsight.setOrganizationUnit(certificateInfo.getIssuedBy().getOrganizationUnit());
+
+        certificateInsight.setParentCommonName(certificateInfo.getIssuedBy().getCommonName());
+        certificateInsight.setParentOrganization(certificateInfo.getIssuedBy().getOrganizationName());
+        certificateInsight.setParentOrganizationUnit(certificateInfo.getIssuedBy().getOrganizationUnit());
+
+        certificateInsight.setValidTo(certificateInsight.getValidTo());
+        certificateInsight.setValidFrom(certificateInsight.getValidFrom());
+
+        certificateInsight.setAlias(certificateInfo.getAlias());
+
+        certificateInsight.setVerified(verifyCertificate(certificateInfo.getAlias()));
+        return certificateInsight;
     }
 }

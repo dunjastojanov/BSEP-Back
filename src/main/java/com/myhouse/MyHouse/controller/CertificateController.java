@@ -18,6 +18,11 @@ public class CertificateController {
     @Autowired
     private CertificateService certificateService;
 
+    @GetMapping
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(certificateService.getAll());
+    }
+
     @PostMapping
     public ResponseEntity<?> createNewCertificate(@RequestBody NewCertificateDataDTO newCertificateDataDTO) {
         return ResponseEntity.ok(certificateService.createNewCertificate(newCertificateDataDTO));
@@ -28,13 +33,11 @@ public class CertificateController {
         return ResponseEntity.ok(certificateService.verifyCertificate(alias));
     }
 
-
-    @GetMapping
+    @GetMapping("/keystore")
     public void loadKeyStore(@RequestParam String fileName) {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore(fileName);
     }
-
     @PostMapping(path = "distribute")
     public ResponseEntity<?> distributeCert(@RequestParam String userEmail) {
         if(certificateService.distributeCertificate(userEmail))
@@ -42,7 +45,6 @@ public class CertificateController {
         else
             return ResponseEntity.badRequest().build();
     }
-
     @PostMapping(path = "info")
     public void createCertificateInfo(@RequestBody CertificateInfoDTO certificateInfoDTO) throws ParseException {
         certificateService.createCertificateInfo(certificateInfoDTO);
