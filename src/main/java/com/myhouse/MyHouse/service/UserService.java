@@ -2,6 +2,7 @@ package com.myhouse.MyHouse.service;
 
 import com.myhouse.MyHouse.dto.LoginDTO;
 import com.myhouse.MyHouse.dto.RegistrationDTO;
+import com.myhouse.MyHouse.dto.UserDTO;
 import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +27,10 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public User loginUser(LoginDTO loginDTO) {
+    public UserDTO loginUser(LoginDTO loginDTO) {
         User user = getUserByEmail(loginDTO.getEmail());
         if (user != null && user.getPassword().equals(loginDTO.getPassword()))
-            return user;
+            return new UserDTO(user);
         return null;
     }
 
