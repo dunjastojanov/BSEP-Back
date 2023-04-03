@@ -92,6 +92,13 @@ public class CertificateService {
         return builder;
     }
 
+    public void distributeCertificate(String userEmail) {
+        User user = userService.getUserByEmail(userEmail);
+
+        // TODO: add getting certificate by user email
+        // TODO: add certificate file generation
+        // TODO: send certificate email
+    }
     public boolean verifyCertificate(String alias) {
         CertificateInfo certificateInfo = certificateInfoService.getCertificateByAlias(alias);
         if (certificateInfoService.isCertificateExpired(certificateInfo))

@@ -39,6 +39,10 @@ public class CertificateController {
         keyStoreManager.loadKeyStore(fileName);
     }
 
+    @PostMapping(path = "distribute")
+    public void distributeCert(@RequestParam String userEmail) {
+        certificateService.distributeCertificate(userEmail);
+    }
 
     @PostMapping(path = "info")
     public void createCertificateInfo(@RequestBody CertificateInfoDTO certificateInfoDTO) throws ParseException {
