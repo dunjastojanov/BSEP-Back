@@ -40,8 +40,11 @@ public class CertificateController {
     }
 
     @PostMapping(path = "distribute")
-    public void distributeCert(@RequestParam String userEmail) {
-        certificateService.distributeCertificate(userEmail);
+    public ResponseEntity distributeCert(@RequestParam String userEmail) {
+        if(certificateService.distributeCertificate(userEmail))
+            return ResponseEntity.ok().build();
+        else
+            return ResponseEntity.badRequest().build();
     }
 
     @PostMapping(path = "info")
@@ -65,9 +68,16 @@ public class CertificateController {
     }
 
     @GetMapping(path = "issuer")
-    public ResponseEntity<?> getIssuerPrivateKey()  {
+    public ResponseEntity<?> getIssuerPrivateKey() {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore("myHouseKeyStore.jks");
         return ResponseEntity.ok(keyStoreManager.readPrivateKey("root"));
+    }
+
+    @GetMapping(path = "algo")
+    public ResponseEntity<?> keyAlgo(@RequestBody CertificateRequestDTO certificateRequestDTO) {
+        KeyAlgorithmService.generateKeyPair(KeyAlgorithmType.valueOf(certificateRequestDTO.getKeyAlgorithm()),
+                certificateRequestDTO.getKeyLength());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

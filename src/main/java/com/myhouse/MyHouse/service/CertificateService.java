@@ -12,11 +12,19 @@ import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;
 import com.myhouse.MyHouse.util.CertificateGenerator;
 import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.KeyPair;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -24,12 +32,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
+@RequiredArgsConstructor
 public class CertificateService {
 
     @Autowired
     private CertificateRequestService certificateRequestService;
     @Autowired
     private UserService userService;
+
+    private final MailService mailService;
 
     @Autowired
     private CertificateInfoService certificateInfoService;
@@ -92,12 +103,31 @@ public class CertificateService {
         return builder;
     }
 
-    public void distributeCertificate(String userEmail) {
+    public boolean distributeCertificate(String userEmail) {
         User user = userService.getUserByEmail(userEmail);
 
         // TODO: add getting certificate by user email
+        String fileName = String.format("./temp/%s.cer", user.getId());
+        File userCert = new File(fileName);
         // TODO: add certificate file generation
-        // TODO: send certificate email
+        if(!userCert.getParentFile().exists())
+            userCert.getParentFile().mkdirs();
+        try {
+            if (userCert.createNewFile()) {
+                mailService.sendCertificate(user.getEmail(), user.getName(), fileName);
+                return userCert.delete();
+            } else {
+                return false;
+            }
+        } catch (MessagingException e) {
+            // TODO: log errors appropreately
+            e.printStackTrace();
+            userCert.delete();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     public boolean verifyCertificate(String alias) {
         CertificateInfo certificateInfo = certificateInfoService.getCertificateByAlias(alias);
