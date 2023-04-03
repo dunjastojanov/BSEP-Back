@@ -8,8 +8,8 @@ import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.model.crypto.IssuerData;
 import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.model.crypto.SubjectData;
-import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;
 import com.myhouse.MyHouse.util.CertificateGenerator;
+import com.myhouse.MyHouse.util.CertificateReader;
 import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
 import jakarta.mail.MessagingException;
@@ -19,17 +19,16 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyPair;
-import java.security.*;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -104,7 +103,11 @@ public class CertificateService {
     }
 
     public boolean distributeCertificate(String userEmail) {
-        User user = userService.getUserByEmail(userEmail);
+        User user = Optional.ofNullable(userService.getUserByEmail(userEmail)).orElseThrow();
+
+        CertificateInfo certInfo = Optional.ofNullable(
+                certificateInfoService.getCertificateByAlias(
+                        user.getEmail())).orElseThrow();
 
         // TODO: add getting certificate by user email
         String fileName = String.format("./temp/%s.cer", user.getId());
@@ -114,6 +117,10 @@ public class CertificateService {
             userCert.getParentFile().mkdirs();
         try {
             if (userCert.createNewFile()) {
+                String pemCertificate = CertificateReader.getPemFromCertAlias(certInfo.getAlias());
+                BufferedWriter writer = new BufferedWriter(new FileWriter(userCert));
+                writer.write(pemCertificate);
+                writer.close();
                 mailService.sendCertificate(user.getEmail(), user.getName(), fileName);
                 return userCert.delete();
             } else {

@@ -1,14 +1,10 @@
 package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.CertificateInfoDTO;
-import com.myhouse.MyHouse.dto.CertificateRequestDTO;
 import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
-import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.service.CertificateService;
-import com.myhouse.MyHouse.util.KeyAlgorithmService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +36,7 @@ public class CertificateController {
     }
 
     @PostMapping(path = "distribute")
-    public ResponseEntity distributeCert(@RequestParam String userEmail) {
+    public ResponseEntity<?> distributeCert(@RequestParam String userEmail) {
         if(certificateService.distributeCertificate(userEmail))
             return ResponseEntity.ok().build();
         else
@@ -72,12 +68,5 @@ public class CertificateController {
         KeyStoreManager keyStoreManager = new KeyStoreManager();
         keyStoreManager.loadKeyStore("myHouseKeyStore.jks");
         return ResponseEntity.ok(keyStoreManager.readPrivateKey("root"));
-    }
-
-    @GetMapping(path = "algo")
-    public ResponseEntity<?> keyAlgo(@RequestBody CertificateRequestDTO certificateRequestDTO) {
-        KeyAlgorithmService.generateKeyPair(KeyAlgorithmType.valueOf(certificateRequestDTO.getKeyAlgorithm()),
-                certificateRequestDTO.getKeyLength());
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

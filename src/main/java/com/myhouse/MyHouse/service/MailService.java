@@ -30,7 +30,7 @@ public class MailService {
 
         FileSystemResource certificate
                 = new FileSystemResource(new File(certificatePath));
-        helper.addAttachment("my-house-certificate", certificate);
+        helper.addAttachment("my-house-certificate.pem", certificate);
         emailSender.send(message);
     }
 
