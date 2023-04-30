@@ -1,7 +1,7 @@
 package com.myhouse.MyHouse.service;
 
-import com.myhouse.MyHouse.dto.CertificateRequestDTO;
-import com.myhouse.MyHouse.dto.RejectionReasonDTO;
+import com.myhouse.MyHouse.dto.cerificate.CertificateRequestDTO;
+import com.myhouse.MyHouse.dto.cerificate.RejectionReasonDTO;
 import com.myhouse.MyHouse.model.CertificateRejectionReason;
 import com.myhouse.MyHouse.model.CertificateRequest;
 import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;

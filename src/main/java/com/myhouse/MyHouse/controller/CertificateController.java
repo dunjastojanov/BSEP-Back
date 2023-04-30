@@ -1,7 +1,7 @@
 package com.myhouse.MyHouse.controller;
 
-import com.myhouse.MyHouse.dto.CertificateInfoDTO;
-import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
+import com.myhouse.MyHouse.dto.cerificate.CertificateInfoDTO;
+import com.myhouse.MyHouse.dto.cerificate.NewCertificateDataDTO;
 import com.myhouse.MyHouse.service.CertificateService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
 import org.springframework.beans.factory.annotation.Autowired;

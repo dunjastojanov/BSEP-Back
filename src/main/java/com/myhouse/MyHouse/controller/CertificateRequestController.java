@@ -1,7 +1,7 @@
 package com.myhouse.MyHouse.controller;
 
-import com.myhouse.MyHouse.dto.CertificateRequestDTO;
-import com.myhouse.MyHouse.dto.RejectionReasonDTO;
+import com.myhouse.MyHouse.dto.cerificate.CertificateRequestDTO;
+import com.myhouse.MyHouse.dto.cerificate.RejectionReasonDTO;
 import com.myhouse.MyHouse.service.CertificateRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
