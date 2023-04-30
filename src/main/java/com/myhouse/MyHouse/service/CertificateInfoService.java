@@ -1,6 +1,6 @@
 package com.myhouse.MyHouse.service;
 
-import com.myhouse.MyHouse.dto.NewCertificateDataDTO;
+import com.myhouse.MyHouse.dto.cerificate.NewCertificateDataDTO;
 import com.myhouse.MyHouse.model.CertificateInfo;
 import com.myhouse.MyHouse.model.CertificateRequest;
 import com.myhouse.MyHouse.model.Organization;
