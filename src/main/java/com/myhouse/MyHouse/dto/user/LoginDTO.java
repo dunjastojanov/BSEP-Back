@@ -1,15 +1,13 @@
-package com.myhouse.MyHouse.dto;
+package com.myhouse.MyHouse.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegistrationDTO {
-    private String name;
-    private String surname;
+@Data
+public class LoginDTO {
     private String email;
     private String password;
 }

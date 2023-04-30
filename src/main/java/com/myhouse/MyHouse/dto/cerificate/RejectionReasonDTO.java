@@ -1,4 +1,4 @@
-package com.myhouse.MyHouse.dto;
+package com.myhouse.MyHouse.dto.cerificate;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class LoginDTO {
-    private String email;
-    private String password;
+public class RejectionReasonDTO {
+    private String id;
+    private String reason;
 }
