@@ -4,7 +4,6 @@ import com.myhouse.MyHouse.dto.user.LoginDTO;
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
 import com.myhouse.MyHouse.dto.LoginDTO;
 import com.myhouse.MyHouse.dto.RegistrationDTO;
-import com.myhouse.MyHouse.dto.UserDTO;
 import com.myhouse.MyHouse.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,14 +60,7 @@ public class UserController {
 
     @PostMapping(path = "login")
     private ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
-
-        UserDTO u = userService.loginUser(loginDTO);
-
-        if (u != null) {
-            return ResponseEntity.ok(u);
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(userService.loginUser(loginDTO));
     }
 
 }

@@ -11,6 +11,7 @@ import com.myhouse.MyHouse.repository.UserRepository;
 import com.myhouse.MyHouse.util.DataValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -30,8 +31,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    @Autowired
-    private RealEstateRepository realEstateRepository;
+    private final RealEstateRepository realEstateRepository;
 
     private final MailService mailService;
 
