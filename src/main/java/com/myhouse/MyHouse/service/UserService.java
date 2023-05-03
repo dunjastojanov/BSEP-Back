@@ -55,6 +55,8 @@ public class UserService {
     }
 
     public UserDTO loginUser(LoginDTO loginDTO) {
+        if (!DataValidator.isEmailValid(loginDTO.getEmail()))
+            return null;
         User user = getUserByEmail(loginDTO.getEmail());
 
         if (user != null && passwordEncoder.matches(loginDTO.getPassword(), user.getPassword()))
