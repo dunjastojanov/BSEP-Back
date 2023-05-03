@@ -2,8 +2,6 @@ package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.user.LoginDTO;
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
-import com.myhouse.MyHouse.dto.LoginDTO;
-import com.myhouse.MyHouse.dto.RegistrationDTO;
 import com.myhouse.MyHouse.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
