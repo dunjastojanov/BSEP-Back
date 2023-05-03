@@ -1,4 +1,4 @@
-package com.myhouse.MyHouse.dto;
+package com.myhouse.MyHouse.dto.cerificate;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
