@@ -16,6 +16,10 @@ import org.springframework.data.domain.PageRequest;
 import org.owasp.encoder.Encode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.*;
+import java.util.stream.Stream;
 
 import java.util.*;
 
@@ -24,6 +28,8 @@ import java.util.*;
 public class UserService {
 
     private final UserRepository userRepository;
+
+    private final RealEstateRepository realEstateRepository;
 
     private final RealEstateRepository realEstateRepository;
 
@@ -36,7 +42,6 @@ public class UserService {
             return;
         if (getUserByEmail(registrationDTO.getEmail()) != null)
             return;
-
         User u = userRepository.save(
                 new User(
                         Encode.forHtml(registrationDTO.getName()),
