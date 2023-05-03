@@ -5,29 +5,35 @@ import com.myhouse.MyHouse.dto.RegistrationDTO;
 import com.myhouse.MyHouse.dto.UserDTO;
 import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.repository.UserRepository;
+import com.myhouse.MyHouse.util.DataValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.owasp.encoder.Encode;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private final MailService mailService;
 
+    private final PasswordEncoder passwordEncoder;
+
     public void createUser(RegistrationDTO registrationDTO) {
-        if (getUserByEmail(registrationDTO.getEmail()) != null)
-            return;
-        User user = new User();
-        user.setName(registrationDTO.getName());
-        user.setEmail(registrationDTO.getEmail());
-        user.setPassword(registrationDTO.getPassword());
-        user.setSurname(registrationDTO.getSurname());
-        userRepository.save(user);
-        mailService.sendWelcomeEmail(user.getEmail(), user.getName(), user.getSurname());
+        if (!DataValidator.isEmailValid(registrationDTO.getEmail())) return;
+
+        if (getUserByEmail(registrationDTO.getEmail()) != null) return;
+
+        User u = userRepository.save(
+                new User(
+                    Encode.forHtml(registrationDTO.getName()),
+                    Encode.forHtml(registrationDTO.getSurname()),
+                    registrationDTO.getEmail(),
+                    passwordEncoder.encode(registrationDTO.getPassword())));
+
+        mailService.sendWelcomeEmail(u.getEmail(), u.getName(), u.getSurname());
     }
 
     public User getUserByEmail(String email) {
@@ -36,8 +42,10 @@ public class UserService {
 
     public UserDTO loginUser(LoginDTO loginDTO) {
         User user = getUserByEmail(loginDTO.getEmail());
-        if (user != null && user.getPassword().equals(loginDTO.getPassword()))
+
+        if (user != null && passwordEncoder.matches(loginDTO.getPassword(), user.getPassword()))
             return new UserDTO(user);
+
         return null;
     }
 
