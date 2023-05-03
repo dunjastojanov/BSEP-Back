@@ -4,10 +4,9 @@ import com.myhouse.MyHouse.dto.CertificateRequestDTO;
 import com.myhouse.MyHouse.dto.RejectionReasonDTO;
 import com.myhouse.MyHouse.model.CertificateRejectionReason;
 import com.myhouse.MyHouse.model.CertificateRequest;
+import com.myhouse.MyHouse.model.crypto.KeyAlgorithmType;
 import com.myhouse.MyHouse.repository.CertificateRejectionReasonRepository;
 import com.myhouse.MyHouse.repository.CertificateRequestRepository;
-import com.myhouse.MyHouse.util.DataValidator;
-import org.owasp.encoder.Encode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,15 +28,12 @@ public class CertificateRequestService {
     }
 
     public void createRequestForCertificate(CertificateRequestDTO certificateRequestDTO) {
-
-        if (!DataValidator.isEmailValid(certificateRequestDTO.getEmail())) return;
-
         CertificateRequest certificateRequest = new CertificateRequest();
         certificateRequest.setEmail(certificateRequestDTO.getEmail());
-        certificateRequest.setCountry(Encode.forHtml(certificateRequestDTO.getCountry()));
+        certificateRequest.setCountry(certificateRequestDTO.getCountry());
         certificateRequest.setResolved(false);
-        certificateRequest.setOrganizationName(Encode.forHtml(certificateRequestDTO.getOrganizationName()));
-        certificateRequest.setOrganizationUnit(Encode.forHtml(certificateRequestDTO.getOrganizationUnit()));
+        certificateRequest.setOrganizationName(certificateRequestDTO.getOrganizationName());
+        certificateRequest.setOrganizationUnit(certificateRequestDTO.getOrganizationUnit());
         certificateRequestRepository.save(certificateRequest);
     }
 
@@ -52,7 +48,7 @@ public class CertificateRequestService {
 
         CertificateRejectionReason certificateRejectionReason = new CertificateRejectionReason();
         certificateRejectionReason.setCertificateRequestId(certificateRequest.getId());
-        certificateRejectionReason.setReason(Encode.forHtml(rejectionReasonDTO.getReason()));
+        certificateRejectionReason.setReason(rejectionReasonDTO.getReason());
         certificateRejectionReasonRepository.save(certificateRejectionReason);
     }
 
