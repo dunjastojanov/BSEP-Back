@@ -25,4 +25,12 @@ public class User {
     @DBRef
     private List<RealEstate> realEstateIds;
 
+    public User(String name, String surname, String email, String password, List<Role> roles, List<RealEstate> realEstateIds) {
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+        this.realEstateIds = realEstateIds;
+    }
 }
