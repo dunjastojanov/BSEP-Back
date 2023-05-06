@@ -6,21 +6,25 @@ import com.myhouse.MyHouse.dto.user.UserDTO;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
 import com.myhouse.MyHouse.model.Role;
 import com.myhouse.MyHouse.model.User;
+import com.myhouse.MyHouse.model.mfa.MfaTokenData;
 import com.myhouse.MyHouse.repository.RealEstateRepository;
 import com.myhouse.MyHouse.repository.UserRepository;
 import com.myhouse.MyHouse.util.DataValidator;
-import lombok.RequiredArgsConstructor;
+import dev.samstevens.totp.exceptions.QrGenerationException;
+import lombok.AllArgsConstructor;
+import org.owasp.encoder.Encode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.owasp.encoder.Encode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
@@ -31,7 +35,11 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
 
-    public void createUser(RegistrationDTO registrationDTO) {
+    private final RegistrationVerificationService registrationVerificationService;
+
+    private final LoginVerificationService loginVerificationService;
+
+    public void createUser(RegistrationDTO registrationDTO) throws QrGenerationException {
         if (!DataValidator.isEmailValid(registrationDTO.getEmail()))
             return;
         if (getUserByEmail(registrationDTO.getEmail()) != null)
@@ -45,10 +53,21 @@ public class UserService {
                         List.of(Role.ADMINISTRATOR),
                         new ArrayList<>(),
                         new ArrayList<>()
+                        loginVerificationService.generateSecretKey()
                 )
         );
-        mailService.sendWelcomeEmail(u.getEmail(), u.getName(), u.getSurname());
+        String token = registrationVerificationService.createToken(u.getId()).getToken();
+        mailService.sendWelcomeEmail(u.getEmail(), u.getName(), u.getSurname(), token);
     }
+
+    public MfaTokenData mfaSetup(String userEmail) throws QrGenerationException {
+        User user = userRepository.findByEmail(userEmail);
+        if (user == null) {
+            return null;
+        }
+        return new MfaTokenData(loginVerificationService.getQRCode(user.getSecret()), user.getSecret());
+    }
+
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email);
@@ -147,5 +166,18 @@ public class UserService {
             user.setResidentRealEstateIds(realEstateRepository.findAllById(realEstateIds));
         }
         userRepository.save(user);
+    }
+
+    public String verifyUserRegistration(String token) {
+        String userId = registrationVerificationService.tryToVerify(token);
+        if (userId.equals(""))
+            return "";
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty())
+            return "";
+        User u = user.get();
+        u.setEnabled(true);
+        userRepository.save(u);
+        return u.getEmail();
     }
 }

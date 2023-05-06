@@ -28,8 +28,4 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .addResourceLocations("classpath:/static/images");
     }
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }

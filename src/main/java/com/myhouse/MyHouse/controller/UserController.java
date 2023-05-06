@@ -3,6 +3,7 @@ package com.myhouse.MyHouse.controller;
 import com.myhouse.MyHouse.dto.user.LoginDTO;
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
 import com.myhouse.MyHouse.service.UserService;
+import dev.samstevens.totp.exceptions.QrGenerationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +52,11 @@ public class UserController {
 
     @PostMapping
     private ResponseEntity<?> register(@RequestBody RegistrationDTO registrationDTO) {
-        userService.createUser(registrationDTO);
+        try {
+            userService.createUser(registrationDTO);
+        } catch (QrGenerationException e) {
+            throw new RuntimeException(e);
+        }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -60,4 +65,15 @@ public class UserController {
         return ResponseEntity.ok(userService.loginUser(loginDTO));
     }
 
+
+    @GetMapping("/register/verification/{token}")
+    private ResponseEntity<String> verifyUserRegistration(@PathVariable String token) {
+        return ResponseEntity.ok(userService.verifyUserRegistration(token));
+    }
+
+
+    @GetMapping("/mfa/setup/{userEmail}")
+    private ResponseEntity<?> mfaSetup(@PathVariable String userEmail) throws QrGenerationException {
+        return ResponseEntity.ok(userService.mfaSetup(userEmail));
+    }
 }
