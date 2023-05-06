@@ -25,7 +25,7 @@ public class LoginVerificationService {
     public String getQRCode(String secret) throws QrGenerationException {
         QrData qrData = new QrData.Builder().label("MFA")
                 .secret(secret)
-                .issuer("neko")
+                .issuer("neko")//TODO change issuer name
                 .algorithm(HashingAlgorithm.SHA256)
                 .digits(6)
                 .period(60)
