@@ -7,11 +7,11 @@ import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.util.Utils;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class LoginVerificationService {
     private QrGenerator qrGenerator;
     private SecretGenerator secretGenerator;

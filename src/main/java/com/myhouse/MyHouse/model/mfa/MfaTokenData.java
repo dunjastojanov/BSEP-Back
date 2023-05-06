@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class MfaTokenData {
-    private String mfaCode;
     private String qrCode;
+    private String mfaCode;
 }

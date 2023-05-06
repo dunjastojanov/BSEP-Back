@@ -18,8 +18,8 @@ public class MailService {
     @Autowired
     private final JavaMailSender emailSender;
 
-    @Value("${frontend.link}")
-    private String FRONTEND_LINK;
+    @Value("${backend.link}")
+    private String BACKEND_LINK;
 
     public MailService(JavaMailSender emailSender) {
         this.emailSender = emailSender;
@@ -43,14 +43,14 @@ public class MailService {
     }
 
     void sendWelcomeEmail(String to, String name, String surname, String link) {
-        link = FRONTEND_LINK + "api/user/register/verification/" + link;
+        link = BACKEND_LINK + "api/user/register/verification/" + link;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("myhouse.marko@gmail.com");
         message.setTo(to);
         message.setSubject("Thank you for registering | MyHouse Security");
         message.setText(
                 String.format("Dear %s %s,\n\nthank you for taking the time to register with the MyHouse Home Security service" +
-                                "\n\nThis is the link to verify your registration" + link + "\n\nSincerely,\nMyHouse team",
+                                "\n\nThis is the link to verify your registration " + link + " \n\nSincerely,\nMyHouse team",
                         surname,
                         name));
         emailSender.send(message);

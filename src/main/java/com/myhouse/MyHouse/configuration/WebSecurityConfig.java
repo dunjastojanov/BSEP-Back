@@ -3,6 +3,8 @@ package com.myhouse.MyHouse.configuration;
 import com.myhouse.MyHouse.mfa.CustomAuthenticationProvider;
 import com.myhouse.MyHouse.mfa.CustomWebAuthenticationDetailsSource;
 import com.myhouse.MyHouse.service.CustomUserDetailsService;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +30,8 @@ public class WebSecurityConfig {
 
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
+
+
 
     @Bean
     public static BCryptPasswordEncoder passwordEncoder() {
