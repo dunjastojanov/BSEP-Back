@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -50,13 +51,13 @@ public class UserController {
     }
 
     @PostMapping
-    private ResponseEntity<?> register(@RequestBody RegistrationDTO registrationDTO) {
+    private ResponseEntity<?> register(@RequestBody @Valid RegistrationDTO registrationDTO) {
         try {
             userService.createUser(registrationDTO);
+            return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (QrGenerationException e) {
             throw new RuntimeException(e);
         }
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/register/verification/{token}")

@@ -47,6 +47,10 @@ public class UserService {
             return;
         if (getUserByEmail(registrationDTO.getEmail()) != null)
             return;
+        if(DataValidator.isInMostCommonPasswords(registrationDTO.getPassword()))
+            return;
+        if(!DataValidator.isPasswordValid(registrationDTO.getPassword()))
+            return;
         User u = userRepository.save(
                 new User(
                         Encode.forHtml(registrationDTO.getName()),
@@ -182,4 +186,5 @@ public class UserService {
             user.setEnabled(false);
         userRepository.save(user);
     }
+
 }
