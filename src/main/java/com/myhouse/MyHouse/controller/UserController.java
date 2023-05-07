@@ -53,6 +53,7 @@ public class UserController {
     @PostMapping
     private ResponseEntity<?> register(@RequestBody @Valid RegistrationDTO registrationDTO) {
         try {
+            //TODO prosledjivati lista rola i izbaciti rolu CLIENT
             userService.createUser(registrationDTO);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (QrGenerationException e) {

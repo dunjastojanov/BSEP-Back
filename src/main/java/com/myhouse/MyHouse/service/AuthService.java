@@ -2,8 +2,11 @@ package com.myhouse.MyHouse.service;
 
 import com.myhouse.MyHouse.dto.UserTokenState;
 import com.myhouse.MyHouse.dto.user.LoginDTO;
+import com.myhouse.MyHouse.model.InvalidToken;
 import com.myhouse.MyHouse.model.mfa.CustomUser;
+import com.myhouse.MyHouse.repository.InvalidTokenRepository;
 import com.myhouse.MyHouse.util.TokenUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +29,9 @@ public class AuthService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private InvalidTokenRepository invalidTokenRepository;
 
 
     public ResponseEntity<?> createAuthenticationToken(LoginDTO authenticationRequest, HttpServletResponse response) {
@@ -58,5 +64,13 @@ public class AuthService {
             userService.disableUser(authenticationRequest.getEmail());
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    public void storeJwtAsInvalid(HttpServletRequest request) {
+        String token = tokenUtils.getToken(request);
+        InvalidToken invalidToken = new InvalidToken();
+        invalidToken.setToken(token);
+        invalidTokenRepository.save(invalidToken);
+        SecurityContextHolder.clearContext();
     }
 }
