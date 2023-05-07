@@ -24,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.name())));
         CustomUser customUser = new CustomUser();
         customUser.setUsername(user.getEmail());
+        customUser.setPassword(user.getPassword());
         customUser.setSecret(user.getSecret());
         customUser.setEnabled(user.isEnabled());
         customUser.setAuthorities(authorities);

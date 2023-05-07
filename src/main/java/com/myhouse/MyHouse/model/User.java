@@ -23,9 +23,9 @@ public class User {
     private String password;
 
     private boolean enabled;
-    private boolean loginDisabled;
-    //TODO secret koji cuvam za MFA postavljam ga pri registraciji
     private String secret;
+
+    private int faultTries;
     @ElementCollection
     private List<Role> roles;
     @DBRef
@@ -41,9 +41,9 @@ public class User {
         this.password = password;
         this.roles = roles;
         this.enabled = false;
-        this.loginDisabled = false;
         this.secret = secret;
         this.residentRealEstateIds = residentRealEstateIds;
         this.ownerRealEstateIds = ownerRealEstateIds;
+        this.faultTries = 0;
     }
 }

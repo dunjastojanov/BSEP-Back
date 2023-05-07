@@ -3,11 +3,11 @@ package com.myhouse.MyHouse.model.mfa;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 
 @NoArgsConstructor
@@ -19,7 +19,7 @@ public class CustomUser implements UserDetails {
     private String secret;
     private Collection<SimpleGrantedAuthority> authorities;
     private boolean enabled;
-
+    private Timestamp lastPasswordResetDate;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -38,17 +38,17 @@ public class CustomUser implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override

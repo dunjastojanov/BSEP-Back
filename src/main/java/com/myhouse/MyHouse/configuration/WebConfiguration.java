@@ -1,11 +1,10 @@
 package com.myhouse.MyHouse.configuration;
 
-import dev.samstevens.totp.code.CodeVerifier;
+import com.myhouse.MyHouse.repository.CertificateInfoRepository;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.qr.ZxingPngQrGenerator;
 import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -16,6 +15,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebMvc
 public class WebConfiguration implements WebMvcConfigurer {
+    private final CertificateInfoRepository certificateInfoRepository;
+
+    public WebConfiguration(CertificateInfoRepository certificateInfoRepository) {
+        this.certificateInfoRepository = certificateInfoRepository;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -43,11 +47,4 @@ public class WebConfiguration implements WebMvcConfigurer {
         return new DefaultSecretGenerator();
     }
 
-    @Bean
-    public CodeVerifier codeVerifier() {
-        return (code, secret) -> {
-            String expectedCode = DigestUtils.sha1Hex(secret + code);
-            return expectedCode.equals(code);
-        };
-    }
 }

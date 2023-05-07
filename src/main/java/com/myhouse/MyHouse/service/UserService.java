@@ -1,6 +1,5 @@
 package com.myhouse.MyHouse.service;
 
-import com.myhouse.MyHouse.dto.user.LoginDTO;
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
 import com.myhouse.MyHouse.dto.user.UserDTO;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
@@ -39,6 +38,10 @@ public class UserService {
 
     private final LoginVerificationService loginVerificationService;
 
+    public boolean verifyTotp(String secret, String code) {
+        return !loginVerificationService.verifyTotp(code, secret);
+    }
+
     public void createUser(RegistrationDTO registrationDTO) throws QrGenerationException {
         if (!DataValidator.isEmailValid(registrationDTO.getEmail()))
             return;
@@ -71,17 +74,6 @@ public class UserService {
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email);
-    }
-
-    public UserDTO loginUser(LoginDTO loginDTO) {
-        if (!DataValidator.isEmailValid(loginDTO.getEmail()))
-            return null;
-        User user = getUserByEmail(loginDTO.getEmail());
-
-        if (user != null && passwordEncoder.matches(loginDTO.getPassword(), user.getPassword()))
-            return new UserDTO(user);
-
-        return null;
     }
 
     public String getUserIdByEmail(String email) {
@@ -179,5 +171,15 @@ public class UserService {
         u.setEnabled(true);
         userRepository.save(u);
         return u.getEmail();
+    }
+
+    public void disableUser(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null)
+            return;
+        user.setFaultTries(user.getFaultTries() + 1);
+        if (user.getFaultTries() >= 3)
+            user.setEnabled(false);
+        userRepository.save(user);
     }
 }

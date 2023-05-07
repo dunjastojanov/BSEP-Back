@@ -1,6 +1,5 @@
 package com.myhouse.MyHouse.controller;
 
-import com.myhouse.MyHouse.dto.user.LoginDTO;
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
 import com.myhouse.MyHouse.service.UserService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
@@ -59,12 +58,6 @@ public class UserController {
         }
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
-
-    @PostMapping(path = "login")
-    private ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
-        return ResponseEntity.ok(userService.loginUser(loginDTO));
-    }
-
 
     @GetMapping("/register/verification/{token}")
     private ResponseEntity<String> verifyUserRegistration(@PathVariable String token) {

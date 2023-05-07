@@ -1,22 +1,22 @@
 package com.myhouse.MyHouse.configuration;
 
-import com.myhouse.MyHouse.mfa.CustomAuthenticationProvider;
-import com.myhouse.MyHouse.mfa.CustomWebAuthenticationDetailsSource;
+import com.myhouse.MyHouse.security.auth.RestAuthenticationEntryPoint;
+import com.myhouse.MyHouse.security.auth.TokenAuthorizationFilter;
 import com.myhouse.MyHouse.service.CustomUserDetailsService;
-import dev.samstevens.totp.qr.QrGenerator;
-import dev.samstevens.totp.qr.ZxingPngQrGenerator;
-import jakarta.annotation.Resource;
+import com.myhouse.MyHouse.util.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
@@ -25,26 +25,15 @@ public class WebSecurityConfig {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    @Resource
-    private CustomWebAuthenticationDetailsSource authenticationDetailsSource;
+    @Autowired
+    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
     @Autowired
-    private CustomAuthenticationProvider customAuthenticationProvider;
-
-
+    private TokenUtils tokenUtils;
 
     @Bean
-    public static BCryptPasswordEncoder passwordEncoder() {
+    public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-
-    @Bean
-    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.authenticationProvider(customAuthenticationProvider);
-        return authenticationManagerBuilder.build();
     }
 
 
@@ -58,20 +47,23 @@ public class WebSecurityConfig {
 
 
     @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors();
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.exceptionHandling().authenticationEntryPoint(restAuthenticationEntryPoint);
         http.authorizeHttpRequests()
                 .requestMatchers("/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
-                .authenticationDetailsSource(authenticationDetailsSource);
-//                .and()
-//                .logout()
-//                .deleteCookies("");
+                .addFilterBefore(new TokenAuthorizationFilter(tokenUtils, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 
 }
