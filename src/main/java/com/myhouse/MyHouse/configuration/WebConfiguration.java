@@ -1,5 +1,11 @@
 package com.myhouse.MyHouse.configuration;
 
+import com.myhouse.MyHouse.repository.CertificateInfoRepository;
+import dev.samstevens.totp.qr.QrGenerator;
+import dev.samstevens.totp.qr.ZxingPngQrGenerator;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -9,6 +15,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @EnableWebMvc
 public class WebConfiguration implements WebMvcConfigurer {
+    private final CertificateInfoRepository certificateInfoRepository;
+
+    public WebConfiguration(CertificateInfoRepository certificateInfoRepository) {
+        this.certificateInfoRepository = certificateInfoRepository;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -25,4 +36,15 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addResourceHandler("/**")
                 .addResourceLocations("classpath:/static/images");
     }
+
+    @Bean
+    public QrGenerator qrGenerator() {
+        return new ZxingPngQrGenerator();
+    }
+
+    @Bean
+    public SecretGenerator secretGenerator() {
+        return new DefaultSecretGenerator();
+    }
+
 }

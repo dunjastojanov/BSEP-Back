@@ -1,10 +1,9 @@
 package com.myhouse.MyHouse.repository;
 
-import com.myhouse.MyHouse.model.User;
+import com.myhouse.MyHouse.model.RealEstate;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends MongoRepository<User, String> {
-    User findByEmail(String email);
+public interface RealEstateRepository extends MongoRepository<RealEstate, String> {
 }
