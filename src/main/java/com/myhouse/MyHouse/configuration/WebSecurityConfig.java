@@ -74,6 +74,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.DELETE,"/api/user/**").hasRole(Role.ADMINISTRATOR.name())
                 .requestMatchers(HttpMethod.PUT,"/api/user/roles/**").hasRole(Role.ADMINISTRATOR.name())
                 .requestMatchers(HttpMethod.PUT,"/api/user/realestates/**").hasRole(Role.ADMINISTRATOR.name())
+                .requestMatchers("/api/realestate").hasRole(Role.ADMINISTRATOR.name())
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new TokenAuthorizationFilter(tokenUtils, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);

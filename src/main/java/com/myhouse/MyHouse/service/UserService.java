@@ -68,7 +68,7 @@ public class UserService {
                         passwordEncoder.encode(registrationDTO.getPassword()),
                         roles,
                         new ArrayList<>(),
-                        new ArrayList<>()
+                        new ArrayList<>(),
                         loginVerificationService.generateSecretKey()
                 )
         );
@@ -81,7 +81,7 @@ public class UserService {
         if (user == null) {
             return null;
         }
-        return new MfaTokenData(loginVerificationService.getQRCode(user.getSecret(),userEmail), user.getSecret());
+        return new MfaTokenData(loginVerificationService.getQRCode(user.getSecret(), userEmail), user.getSecret());
     }
 
 
