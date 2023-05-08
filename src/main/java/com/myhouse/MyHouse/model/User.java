@@ -23,5 +23,8 @@ public class User {
     @ElementCollection
     private List<Role> roles;
     @DBRef
-    private List<RealEstate> realEstateIds;
+    private List<RealEstate> residentRealEstateIds;
+    @DBRef
+
+    private List<RealEstate> ownerRealEstateIds;
 }

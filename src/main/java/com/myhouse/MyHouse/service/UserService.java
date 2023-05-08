@@ -13,13 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +39,9 @@ public class UserService {
         user.setEmail(registrationDTO.getEmail());
         user.setPassword(registrationDTO.getPassword());
         user.setSurname(registrationDTO.getSurname());
-        user.setRoles(List.of(Role.CLIENT));
-        user.setRealEstateIds(new ArrayList<>());
+        user.setRoles(List.of(Role.ADMINISTRATOR));
+        user.setOwnerRealEstateIds(new ArrayList<>());
+        user.setResidentRealEstateIds(new ArrayList<>());
         userRepository.save(user);
         mailService.sendWelcomeEmail(user.getEmail(), user.getName(), user.getSurname());
     }
@@ -87,8 +86,12 @@ public class UserService {
                     .filter(user -> user.getEmail().equals(email)).toList();
         }
         if (role != null) {
-            userDTOs = userDTOs.stream()
-                    .filter(user -> user.getRoles().contains(Role.valueOf(role))).toList();
+            try {
+                userDTOs = userDTOs.stream()
+                        .filter(user -> user.getRoles().contains(Role.valueOf(role))).toList();
+            } catch (IllegalArgumentException e) {
+                return new ArrayList<>();
+            }
         }
         return userDTOs;
     }
@@ -101,7 +104,7 @@ public class UserService {
         if (start <= end) {
             dtos = entities.subList(start, end);
         }
-        return new PageImpl<UserDTO>(dtos, PageRequest.of(page, size), total);
+        return new PageImpl<>(dtos, PageRequest.of(page, size), total);
     }
 
     public UserDTO getById(String id) {
@@ -122,15 +125,20 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public void updateUserRole(String id, List<String> roles) {
+    public UserDTO updateUserRole(String id, List<String> roles) {
         User user = findById(id);
         user.setRoles(roles.stream().map(Role::valueOf).toList());
-        userRepository.save(user);
+        return new UserDTO(userRepository.save(user));
     }
 
-    public void updateUserRealEstates(String id, List<String> realEstateIds) {
+    public void updateUserRealEstates(String id, String role, List<String> realEstateIds) {
         User user = findById(id);
-        user.setRealEstateIds(realEstateRepository.findAllById(realEstateIds));
+        if (role.equals("owner")) {
+            user.setOwnerRealEstateIds(realEstateRepository.findAllById(realEstateIds));
+        }
+        if (role.equals("resident")) {
+            user.setResidentRealEstateIds(realEstateRepository.findAllById(realEstateIds));
+        }
         userRepository.save(user);
     }
 
