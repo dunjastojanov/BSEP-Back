@@ -42,7 +42,8 @@ public class UserService {
                         Encode.forHtml(registrationDTO.getSurname()),
                         registrationDTO.getEmail(),
                         passwordEncoder.encode(registrationDTO.getPassword()),
-                        List.of(Role.CLIENT),
+                        List.of(Role.ADMINISTRATOR),
+                        new ArrayList<>(),
                         new ArrayList<>()
                 )
         );

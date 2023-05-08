@@ -26,7 +26,15 @@ public class User {
     private List<RealEstate> residentRealEstateIds;
     @DBRef
     private List<RealEstate> ownerRealEstateIds;
-    private List<RealEstate> realEstateIds;
 
 
+    public User(String name, String surname, String email, String password, List<Role> roles, List<RealEstate> residentRealEstateIds, List<RealEstate> ownerRealEstateIds) {
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
+        this.roles = roles;
+        this.residentRealEstateIds = residentRealEstateIds;
+        this.ownerRealEstateIds = ownerRealEstateIds;
+    }
 }
