@@ -7,14 +7,15 @@ import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.util.Utils;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 @Service
-@AllArgsConstructor
 public class LoginVerificationService {
+    @Autowired
     private QrGenerator qrGenerator;
+    @Autowired
     private SecretGenerator secretGenerator;
 
     public String generateSecretKey() {
@@ -22,7 +23,7 @@ public class LoginVerificationService {
     }
 
     public String getQRCode(String secret, String userEmail) throws QrGenerationException {
-        QrData qrData = new QrData.Builder().label("MFA"+userEmail)
+        QrData qrData = new QrData.Builder().label(userEmail)
                 .secret(secret)
                 .issuer("MyHouse Security team")
                 .algorithm(HashingAlgorithm.SHA256)
@@ -38,7 +39,6 @@ public class LoginVerificationService {
     public boolean verifyTotp(String code, String secret) {
         GoogleAuthenticator authenticator = new GoogleAuthenticator();
         int verificationCode = authenticator.getTotpPassword(secret);
-        System.out.println(verificationCode);
         return authenticator.authorize(secret, Integer.parseInt(code));
     }
 }

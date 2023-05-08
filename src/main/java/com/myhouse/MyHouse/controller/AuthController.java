@@ -17,12 +17,12 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(path = "/login")
-    private ResponseEntity<?> login(@RequestBody @Valid LoginDTO loginDTO, HttpServletResponse httpServletResponse) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO loginDTO, HttpServletResponse httpServletResponse) {
         return ResponseEntity.ok(authService.createAuthenticationToken(loginDTO, httpServletResponse));
     }
 
     @GetMapping(path = "/logout")
-    private void logout(HttpServletRequest request){
+    public void logout(HttpServletRequest request) {
         authService.storeJwtAsInvalid(request);
     }
 }

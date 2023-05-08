@@ -11,7 +11,9 @@ import com.myhouse.MyHouse.repository.UserRepository;
 import com.myhouse.MyHouse.util.DataValidator;
 import dev.samstevens.totp.exceptions.QrGenerationException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.owasp.encoder.Encode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -24,22 +26,23 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RealEstateRepository realEstateRepository;
+    @Autowired
+    private MailService mailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RegistrationVerificationService registrationVerificationService;
+    @Autowired
+    private LoginVerificationService loginVerificationService;
 
-    private final RealEstateRepository realEstateRepository;
-
-    private final MailService mailService;
-
-    private final PasswordEncoder passwordEncoder;
-
-    private final RegistrationVerificationService registrationVerificationService;
-
-    private final LoginVerificationService loginVerificationService;
-
-    public boolean verifyTotp(String secret, String code) {
+    public boolean verifyTotp(String code, String secret) {
         return !loginVerificationService.verifyTotp(code, secret);
     }
 

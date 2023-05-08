@@ -55,7 +55,6 @@ public class AuthService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Set-Cookie", cookie);
-
             // Vrati token kao odgovor na uspesnu autentifikaciju
             return ResponseEntity.ok().headers(headers).body(new UserTokenState(jwt, expiresIn));
         } catch (AuthenticationException exception) {

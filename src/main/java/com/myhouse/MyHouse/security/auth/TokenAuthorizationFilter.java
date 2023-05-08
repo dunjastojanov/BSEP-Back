@@ -36,13 +36,16 @@ public class TokenAuthorizationFilter extends OncePerRequestFilter {
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (request.getServletPath().equals("/api/login")) {
+        if (request.getServletPath().equals("/api/login")
+                || request.getServletPath().equals("/api/user/register")
+                || request.getServletPath().startsWith("/api/user/mfa/setup/")
+                || request.getServletPath().startsWith("/api/user/register/verification/")) {
             chain.doFilter(request, response);
         } else {
             String username;
             // 1. Preuzimanje JWT tokena i cookie iz zahteva
             String authToken = tokenUtils.getToken(request);
-            if(tokenUtils.isTokenInvalid(authToken))
+            if (tokenUtils.isTokenInvalid(authToken))
                 throw new RuntimeException("Token is invalid");
             String fingerprint = tokenUtils.getFingerprintFromCookie(request);
             try {
@@ -64,7 +67,7 @@ public class TokenAuthorizationFilter extends OncePerRequestFilter {
 
             } catch (ExpiredJwtException ex) {
                 LOGGER.debug("Token expired!");
-            }catch (RuntimeException ex) {
+            } catch (RuntimeException ex) {
                 LOGGER.debug("Token is invalid");
             }
             // prosledi request dalje u sledeci filter

@@ -17,31 +17,31 @@ public class RealEstateController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('admin:read')")
-    private ResponseEntity<?> getAll() {
+    public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(realEstateService.getAll());
     }
 
     @GetMapping("/page")
     @PreAuthorize("hasAuthority('admin:read')")
-    private ResponseEntity<?> getAllAsPage(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<?> getAllAsPage(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(realEstateService.getAll(page, size));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('admin:read')")
-    private ResponseEntity<?> getById(@PathVariable String id) {
+    public ResponseEntity<?> getById(@PathVariable String id) {
         return ResponseEntity.ok(realEstateService.getById(id));
     }
 
     @PostMapping("/{name}")
     @PreAuthorize("hasAuthority('admin:write')")
-    private ResponseEntity<?> createRealEstate(@PathVariable String name) {
+    public ResponseEntity<?> createRealEstate(@PathVariable String name) {
         return ResponseEntity.ok(realEstateService.createRealEstate(name));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin:delete')")
-    private ResponseEntity<?> deleteById(@PathVariable String id) {
+    public ResponseEntity<?> deleteById(@PathVariable String id) {
         realEstateService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

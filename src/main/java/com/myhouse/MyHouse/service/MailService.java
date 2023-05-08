@@ -16,14 +16,10 @@ import java.io.File;
 public class MailService {
 
     @Autowired
-    private final JavaMailSender emailSender;
+    private JavaMailSender emailSender;
 
     @Value("${frontend.link}")
     private String FRONTEND_LINK;
-
-    public MailService(JavaMailSender emailSender) {
-        this.emailSender = emailSender;
-    }
 
 
     void sendCertificate(String to, String name, String certificatePath) throws MessagingException {
