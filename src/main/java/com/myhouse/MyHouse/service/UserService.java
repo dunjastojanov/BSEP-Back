@@ -10,7 +10,6 @@ import com.myhouse.MyHouse.repository.RealEstateRepository;
 import com.myhouse.MyHouse.repository.UserRepository;
 import com.myhouse.MyHouse.util.DataValidator;
 import dev.samstevens.totp.exceptions.QrGenerationException;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.owasp.encoder.Encode;
 import org.springframework.beans.factory.annotation.Autowired;

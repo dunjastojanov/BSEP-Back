@@ -39,7 +39,7 @@ public class MailService {
     }
 
     void sendWelcomeEmail(String to, String name, String surname, String link) {
-        link = FRONTEND_LINK + "/register/verification/" + link;
+        link = FRONTEND_LINK + "register/verification/" + link;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("myhouse.marko@gmail.com");
         message.setTo(to);
