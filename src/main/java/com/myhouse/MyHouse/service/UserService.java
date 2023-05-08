@@ -47,13 +47,13 @@ public class UserService {
 
     public void createUser(RegistrationDTO registrationDTO) throws QrGenerationException {
         if (!DataValidator.isEmailValid(registrationDTO.getEmail()))
-            return;
+            throw new RuntimeException("Email is not valid");
         if (getUserByEmail(registrationDTO.getEmail()) != null)
-            return;
+            throw new RuntimeException("User with this email exists");
         if (DataValidator.isInMostCommonPasswords(registrationDTO.getPassword()))
-            return;
+            throw new RuntimeException("Password is common");
         if (!DataValidator.isPasswordValid(registrationDTO.getPassword()))
-            return;
+            throw new RuntimeException("Invalid password");
         List<Role> roles = new ArrayList<>();
         registrationDTO.getRoles().forEach(
                 roleName -> {
@@ -108,15 +108,15 @@ public class UserService {
         }
         if (name != null) {
             userDTOs = userDTOs.stream()
-                    .filter(user -> user.getName().equals(name)).toList();
+                    .filter(user -> user.getName().startsWith(name)).toList();
         }
         if (surname != null) {
             userDTOs = userDTOs.stream()
-                    .filter(user -> user.getSurname().equals(surname)).toList();
+                    .filter(user -> user.getSurname().startsWith(surname)).toList();
         }
         if (email != null) {
             userDTOs = userDTOs.stream()
-                    .filter(user -> user.getEmail().equals(email)).toList();
+                    .filter(user -> user.getEmail().startsWith(email)).toList();
         }
         if (role != null) {
             try {
