@@ -19,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,17 +48,25 @@ public class UserService {
             return;
         if (getUserByEmail(registrationDTO.getEmail()) != null)
             return;
-        if(DataValidator.isInMostCommonPasswords(registrationDTO.getPassword()))
+        if (DataValidator.isInMostCommonPasswords(registrationDTO.getPassword()))
             return;
-        if(!DataValidator.isPasswordValid(registrationDTO.getPassword()))
+        if (!DataValidator.isPasswordValid(registrationDTO.getPassword()))
             return;
+        List<Role> roles = new ArrayList<>();
+        registrationDTO.getRoles().forEach(
+                roleName -> {
+                    if (EnumSet.allOf(Role.class).stream().anyMatch(e -> e.name().equals(roleName))) {
+                        roles.add(Role.valueOf(roleName));
+                    }
+                }
+        );
         User u = userRepository.save(
                 new User(
                         Encode.forHtml(registrationDTO.getName()),
                         Encode.forHtml(registrationDTO.getSurname()),
                         registrationDTO.getEmail(),
                         passwordEncoder.encode(registrationDTO.getPassword()),
-                        List.of(Role.ADMINISTRATOR),
+                        roles,
                         new ArrayList<>(),
                         new ArrayList<>()
                         loginVerificationService.generateSecretKey()
@@ -72,7 +81,7 @@ public class UserService {
         if (user == null) {
             return null;
         }
-        return new MfaTokenData(loginVerificationService.getQRCode(user.getSecret()), user.getSecret());
+        return new MfaTokenData(loginVerificationService.getQRCode(user.getSecret(),userEmail), user.getSecret());
     }
 
 

@@ -1,12 +1,14 @@
 package com.myhouse.MyHouse.util;
 
 import com.myhouse.MyHouse.model.mfa.CustomUser;
+import com.myhouse.MyHouse.service.InvalidTokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -60,15 +62,23 @@ public class TokenUtils {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
+    @Autowired
+    private InvalidTokenService invalidTokenService;
+
 
     // ============= Funkcije za generisanje JWT tokena =============
 
+
+    public boolean isTokenInvalid(String token){
+        return invalidTokenService.isInvalidToken(token);
+    }
     /**
      * Funkcija za generisanje JWT tokena.
      *
      * @param username Korisničko ime korisnika kojem se token izdaje
      * @return JWT token
      */
+
     public String generateToken(String username, String fingerprint) {
         // moguce je postavljanje proizvoljnih podataka u telo JWT tokena pozivom funkcije .claim("key", value), npr. .claim("role", user.getRole())
 
@@ -336,6 +346,7 @@ public class TokenUtils {
 
         // Token je validan kada:
         boolean isUsernameValid = username != null // korisnicko ime nije null
+                && user.isEnabled()
                 && username.equals(userDetails.getUsername()) // korisnicko ime iz tokena se podudara sa korisnickom imenom koje pise u bazi
                 && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate()); // nakon kreiranja tokena korisnik nije menjao svoju lozinku
 

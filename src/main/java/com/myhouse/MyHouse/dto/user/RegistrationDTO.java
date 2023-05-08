@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -18,4 +19,5 @@ public class RegistrationDTO {
             message = "Password must contain at least one upper letter, at least one lower latter, at least one digit and least one special character")
     @NotBlank(message = "Password is mandatory")
     private String password;
+    private List<String> roles;
 }

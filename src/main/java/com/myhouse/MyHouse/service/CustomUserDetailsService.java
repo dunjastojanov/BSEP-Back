@@ -21,7 +21,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     public CustomUser loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userService.getUserByEmail(username);
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.name())));
+        user.getRoles().forEach(permissions -> permissions.getPermissions()
+                .forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.name()))));
         CustomUser customUser = new CustomUser();
         customUser.setUsername(user.getEmail());
         customUser.setPassword(user.getPassword());

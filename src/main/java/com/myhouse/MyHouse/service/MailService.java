@@ -18,8 +18,8 @@ public class MailService {
     @Autowired
     private final JavaMailSender emailSender;
 
-    @Value("${backend.link}")
-    private String BACKEND_LINK;
+    @Value("${frontend.link}")
+    private String FRONTEND_LINK;
 
     public MailService(JavaMailSender emailSender) {
         this.emailSender = emailSender;
@@ -43,7 +43,7 @@ public class MailService {
     }
 
     void sendWelcomeEmail(String to, String name, String surname, String link) {
-        link = BACKEND_LINK + "api/user/register/verification/" + link;
+        link = FRONTEND_LINK + "/registration/verification/" + link;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("myhouse.marko@gmail.com");
         message.setTo(to);

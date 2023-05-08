@@ -1,6 +1,5 @@
 package com.myhouse.MyHouse.security.auth;
 
-import com.myhouse.MyHouse.service.InvalidTokenService;
 import com.myhouse.MyHouse.util.TokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -9,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,6 +28,7 @@ public class TokenAuthorizationFilter extends OncePerRequestFilter {
 
     protected final Log LOGGER = LogFactory.getLog(getClass());
 
+
     public TokenAuthorizationFilter(TokenUtils tokenHelper, UserDetailsService userDetailsService) {
         this.tokenUtils = tokenHelper;
         this.userDetailsService = userDetailsService;
@@ -40,10 +39,11 @@ public class TokenAuthorizationFilter extends OncePerRequestFilter {
         if (request.getServletPath().equals("/api/login")) {
             chain.doFilter(request, response);
         } else {
-            //TODO mora da se proveri da li je JWT u invalidiranim jwt
             String username;
             // 1. Preuzimanje JWT tokena i cookie iz zahteva
             String authToken = tokenUtils.getToken(request);
+            if(tokenUtils.isTokenInvalid(authToken))
+                throw new RuntimeException("Token is invalid");
             String fingerprint = tokenUtils.getFingerprintFromCookie(request);
             try {
                 if (authToken != null) {
@@ -64,6 +64,8 @@ public class TokenAuthorizationFilter extends OncePerRequestFilter {
 
             } catch (ExpiredJwtException ex) {
                 LOGGER.debug("Token expired!");
+            }catch (RuntimeException ex) {
+                LOGGER.debug("Token is invalid");
             }
             // prosledi request dalje u sledeci filter
             chain.doFilter(request, response);

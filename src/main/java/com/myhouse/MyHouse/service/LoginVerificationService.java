@@ -21,8 +21,8 @@ public class LoginVerificationService {
         return secretGenerator.generate();
     }
 
-    public String getQRCode(String secret) throws QrGenerationException {
-        QrData qrData = new QrData.Builder().label("MFA")
+    public String getQRCode(String secret, String userEmail) throws QrGenerationException {
+        QrData qrData = new QrData.Builder().label("MFA"+userEmail)
                 .secret(secret)
                 .issuer("MyHouse Security team")
                 .algorithm(HashingAlgorithm.SHA256)

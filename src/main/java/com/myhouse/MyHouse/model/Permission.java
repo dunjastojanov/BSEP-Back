@@ -16,10 +16,8 @@ public enum Permission {
     RESIDENT_READ("resident:read"),
     RESIDENT_WRITE("resident:write"),
     RESIDENT_UPDATE("resident:update"),
-    RESIDENT_DELETE("owner:delete"),
-
-    ;
+    RESIDENT_DELETE("owner:delete");
 
     @Getter
-    private String permission;
+    private final String permission;
 }

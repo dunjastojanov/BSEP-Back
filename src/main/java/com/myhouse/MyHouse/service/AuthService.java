@@ -2,9 +2,7 @@ package com.myhouse.MyHouse.service;
 
 import com.myhouse.MyHouse.dto.UserTokenState;
 import com.myhouse.MyHouse.dto.user.LoginDTO;
-import com.myhouse.MyHouse.model.InvalidToken;
 import com.myhouse.MyHouse.model.mfa.CustomUser;
-import com.myhouse.MyHouse.repository.InvalidTokenRepository;
 import com.myhouse.MyHouse.util.TokenUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,7 +29,7 @@ public class AuthService {
     private UserService userService;
 
     @Autowired
-    private InvalidTokenRepository invalidTokenRepository;
+    private InvalidTokenService invalidTokenService;
 
 
     public ResponseEntity<?> createAuthenticationToken(LoginDTO authenticationRequest, HttpServletResponse response) {
@@ -68,9 +66,7 @@ public class AuthService {
 
     public void storeJwtAsInvalid(HttpServletRequest request) {
         String token = tokenUtils.getToken(request);
-        InvalidToken invalidToken = new InvalidToken();
-        invalidToken.setToken(token);
-        invalidTokenRepository.save(invalidToken);
+        invalidTokenService.addInvalidToken(token);
         SecurityContextHolder.clearContext();
     }
 }
