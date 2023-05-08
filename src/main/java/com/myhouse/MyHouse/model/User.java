@@ -25,6 +25,8 @@ public class User {
     @DBRef
     private List<RealEstate> residentRealEstateIds;
     @DBRef
-
     private List<RealEstate> ownerRealEstateIds;
+    private List<RealEstate> realEstateIds;
+
+
 }
