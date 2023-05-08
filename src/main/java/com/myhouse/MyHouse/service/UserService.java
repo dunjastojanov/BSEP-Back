@@ -1,68 +1,94 @@
 package com.myhouse.MyHouse.service;
 
-import com.myhouse.MyHouse.dto.user.LoginDTO;
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
 import com.myhouse.MyHouse.dto.user.UserDTO;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
 import com.myhouse.MyHouse.model.Role;
 import com.myhouse.MyHouse.model.User;
+import com.myhouse.MyHouse.model.mfa.MfaTokenData;
 import com.myhouse.MyHouse.repository.RealEstateRepository;
 import com.myhouse.MyHouse.repository.UserRepository;
 import com.myhouse.MyHouse.util.DataValidator;
+import dev.samstevens.totp.exceptions.QrGenerationException;
 import lombok.RequiredArgsConstructor;
+import org.owasp.encoder.Encode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.owasp.encoder.Encode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private RealEstateRepository realEstateRepository;
+    @Autowired
+    private MailService mailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RegistrationVerificationService registrationVerificationService;
+    @Autowired
+    private LoginVerificationService loginVerificationService;
 
-    private final RealEstateRepository realEstateRepository;
+    public boolean verifyTotp(String code, String secret) {
+        return !loginVerificationService.verifyTotp(code, secret);
+    }
 
-    private final MailService mailService;
-
-    private final PasswordEncoder passwordEncoder;
-
-    public void createUser(RegistrationDTO registrationDTO) {
+    public void createUser(RegistrationDTO registrationDTO) throws QrGenerationException {
         if (!DataValidator.isEmailValid(registrationDTO.getEmail()))
-            return;
+            throw new RuntimeException("Email is not valid");
         if (getUserByEmail(registrationDTO.getEmail()) != null)
-            return;
+            throw new RuntimeException("User with this email exists");
+        if (DataValidator.isInMostCommonPasswords(registrationDTO.getPassword()))
+            throw new RuntimeException("Password is common");
+        if (!DataValidator.isPasswordValid(registrationDTO.getPassword()))
+            throw new RuntimeException("Invalid password");
+        List<Role> roles = new ArrayList<>();
+        registrationDTO.getRoles().forEach(
+                roleName -> {
+                    if (EnumSet.allOf(Role.class).stream().anyMatch(e -> e.name().equals(roleName))) {
+                        roles.add(Role.valueOf(roleName));
+                    }
+                }
+        );
         User u = userRepository.save(
                 new User(
                         Encode.forHtml(registrationDTO.getName()),
                         Encode.forHtml(registrationDTO.getSurname()),
                         registrationDTO.getEmail(),
                         passwordEncoder.encode(registrationDTO.getPassword()),
-                        List.of(Role.ADMINISTRATOR),
+                        roles,
                         new ArrayList<>(),
-                        new ArrayList<>()
+                        new ArrayList<>(),
+                        loginVerificationService.generateSecretKey()
                 )
         );
-        mailService.sendWelcomeEmail(u.getEmail(), u.getName(), u.getSurname());
+        String token = registrationVerificationService.createToken(u.getId()).getToken();
+        mailService.sendWelcomeEmail(u.getEmail(), u.getName(), u.getSurname(), token);
     }
+
+    public MfaTokenData mfaSetup(String userEmail) throws QrGenerationException {
+        User user = userRepository.findByEmail(userEmail);
+        if (user == null) {
+            return null;
+        }
+        return new MfaTokenData(loginVerificationService.getQRCode(user.getSecret(), userEmail), user.getSecret());
+    }
+
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email);
-    }
-
-    public UserDTO loginUser(LoginDTO loginDTO) {
-        if (!DataValidator.isEmailValid(loginDTO.getEmail()))
-            return null;
-        User user = getUserByEmail(loginDTO.getEmail());
-
-        if (user != null && passwordEncoder.matches(loginDTO.getPassword(), user.getPassword()))
-            return new UserDTO(user);
-
-        return null;
     }
 
     public String getUserIdByEmail(String email) {
@@ -82,15 +108,15 @@ public class UserService {
         }
         if (name != null) {
             userDTOs = userDTOs.stream()
-                    .filter(user -> user.getName().equals(name)).toList();
+                    .filter(user -> user.getName().startsWith(name)).toList();
         }
         if (surname != null) {
             userDTOs = userDTOs.stream()
-                    .filter(user -> user.getSurname().equals(surname)).toList();
+                    .filter(user -> user.getSurname().startsWith(surname)).toList();
         }
         if (email != null) {
             userDTOs = userDTOs.stream()
-                    .filter(user -> user.getEmail().equals(email)).toList();
+                    .filter(user -> user.getEmail().startsWith(email)).toList();
         }
         if (role != null) {
             try {
@@ -148,4 +174,28 @@ public class UserService {
         }
         userRepository.save(user);
     }
+
+    public String verifyUserRegistration(String token) {
+        String userId = registrationVerificationService.tryToVerify(token);
+        if (userId.equals(""))
+            return "";
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty())
+            return "";
+        User u = user.get();
+        u.setEnabled(true);
+        userRepository.save(u);
+        return u.getEmail();
+    }
+
+    public void disableUser(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null)
+            return;
+        user.setFaultTries(user.getFaultTries() + 1);
+        if (user.getFaultTries() >= 3)
+            user.setEnabled(false);
+        userRepository.save(user);
+    }
+
 }

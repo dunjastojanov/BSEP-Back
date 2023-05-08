@@ -3,6 +3,7 @@ package com.myhouse.MyHouse.service;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
 import com.myhouse.MyHouse.model.RealEstate;
 import com.myhouse.MyHouse.repository.RealEstateRepository;
+import org.owasp.encoder.Encode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,7 +24,7 @@ public class RealEstateService {
         RealEstate realEstate = new RealEstate();
         realEstate.setOwnerUserIds(new ArrayList<>());
         realEstate.setResidentUserIds(new ArrayList<>());
-        realEstate.setName(name);
+        realEstate.setName(Encode.forHtml(name));
         return realEstateRepository.save(realEstate);
     }
 
