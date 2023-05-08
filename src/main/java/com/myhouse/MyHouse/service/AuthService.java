@@ -2,13 +2,13 @@ package com.myhouse.MyHouse.service;
 
 import com.myhouse.MyHouse.dto.UserTokenState;
 import com.myhouse.MyHouse.dto.user.LoginDTO;
+import com.myhouse.MyHouse.dto.user.UserDTO;
 import com.myhouse.MyHouse.model.mfa.CustomUser;
 import com.myhouse.MyHouse.util.TokenUtils;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,7 +32,7 @@ public class AuthService {
     private InvalidTokenService invalidTokenService;
 
 
-    public ResponseEntity<?> createAuthenticationToken(LoginDTO authenticationRequest, HttpServletResponse response) {
+    public UserTokenState createAuthenticationToken(LoginDTO authenticationRequest, HttpServletResponse response) {
         // Ukoliko kredencijali nisu ispravni, logovanje nece biti uspesno, desice se
         // AuthenticationException
         try {
@@ -50,16 +50,18 @@ public class AuthService {
             int expiresIn = tokenUtils.getExpiredIn();
 
             // Kreiraj cookie
-//         String cookie = "__Secure-Fgp=" + fingerprint + "; SameSite=Strict; HttpOnly; Path=/; Secure";  // kasnije mozete probati da postavite i ostale atribute, ali tek nakon sto podesite https
-            String cookie = "Fingerprint=" + fingerprint + "; HttpOnly; Path=/";
+            Cookie cookie = new Cookie("Fingerprint", fingerprint);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            response.addCookie(cookie);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Set-Cookie", cookie);
             // Vrati token kao odgovor na uspesnu autentifikaciju
-            return ResponseEntity.ok().headers(headers).body(new UserTokenState(jwt, expiresIn));
+            UserDTO userDTO = new UserDTO(userService.getUserByEmail(user.getUsername()));
+
+            return new UserTokenState(jwt, expiresIn, userDTO);
         } catch (AuthenticationException exception) {
             userService.disableUser(authenticationRequest.getEmail());
-            return ResponseEntity.badRequest().build();
+            return null;
         }
     }
 
