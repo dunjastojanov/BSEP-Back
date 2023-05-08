@@ -40,13 +40,12 @@ public class UserController {
     }
 
     @PutMapping("/roles/{id}")
-    ResponseEntity<?> updateUserRoles(@PathVariable String id, @RequestParam List<String> roles) {
-        userService.updateUserRole(id, roles);
-        return new ResponseEntity<>(HttpStatus.OK);
+    ResponseEntity<?> updateUserRoles(@PathVariable String id, @RequestBody List<String> roles) {
+        return ResponseEntity.ok(userService.updateUserRole(id, roles));
     }
-    @PutMapping("/realestates/{id}")
-    ResponseEntity<?> updateUserRealEstates(@PathVariable String id, @RequestParam List<String> realEstateIds) {
-        userService.updateUserRealEstates(id, realEstateIds);
+    @PutMapping("/realestates/{role}/{id}")
+    ResponseEntity<?> updateUserRealEstates(@PathVariable String id,@PathVariable String role, @RequestBody List<String> realEstateIds) {
+        userService.updateUserRealEstates(id,role, realEstateIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

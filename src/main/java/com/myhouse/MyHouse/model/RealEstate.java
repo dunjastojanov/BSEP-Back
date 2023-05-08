@@ -16,6 +16,9 @@ import java.util.List;
 public class RealEstate {
     @Id
     private String id;
+    private String name;
     @DBRef
-    private List<User> userIds;
+    private List<User> ownerUserIds;
+    @DBRef
+    private List<User> residentUserIds;
 }

@@ -23,14 +23,18 @@ public class User {
     @ElementCollection
     private List<Role> roles;
     @DBRef
-    private List<RealEstate> realEstateIds;
-    
-    public User(String name, String surname, String email, String password, List<Role> roles, List<RealEstate> realEstateIds) {
+    private List<RealEstate> residentRealEstateIds;
+    @DBRef
+    private List<RealEstate> ownerRealEstateIds;
+
+
+    public User(String name, String surname, String email, String password, List<Role> roles, List<RealEstate> residentRealEstateIds, List<RealEstate> ownerRealEstateIds) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.password = password;
         this.roles = roles;
-        this.realEstateIds = realEstateIds;
+        this.residentRealEstateIds = residentRealEstateIds;
+        this.ownerRealEstateIds = ownerRealEstateIds;
     }
 }

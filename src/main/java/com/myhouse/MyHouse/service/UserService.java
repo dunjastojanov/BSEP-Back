@@ -42,7 +42,8 @@ public class UserService {
                         Encode.forHtml(registrationDTO.getSurname()),
                         registrationDTO.getEmail(),
                         passwordEncoder.encode(registrationDTO.getPassword()),
-                        List.of(Role.CLIENT),
+                        List.of(Role.ADMINISTRATOR),
+                        new ArrayList<>(),
                         new ArrayList<>()
                 )
         );
@@ -92,8 +93,12 @@ public class UserService {
                     .filter(user -> user.getEmail().equals(email)).toList();
         }
         if (role != null) {
-            userDTOs = userDTOs.stream()
-                    .filter(user -> user.getRoles().contains(Role.valueOf(role))).toList();
+            try {
+                userDTOs = userDTOs.stream()
+                        .filter(user -> user.getRoles().contains(Role.valueOf(role))).toList();
+            } catch (IllegalArgumentException e) {
+                return new ArrayList<>();
+            }
         }
         return userDTOs;
     }
@@ -127,15 +132,20 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public void updateUserRole(String id, List<String> roles) {
+    public UserDTO updateUserRole(String id, List<String> roles) {
         User user = findById(id);
         user.setRoles(roles.stream().map(Role::valueOf).toList());
-        userRepository.save(user);
+        return new UserDTO(userRepository.save(user));
     }
 
-    public void updateUserRealEstates(String id, List<String> realEstateIds) {
+    public void updateUserRealEstates(String id, String role, List<String> realEstateIds) {
         User user = findById(id);
-        user.setRealEstateIds(realEstateRepository.findAllById(realEstateIds));
+        if (role.equals("owner")) {
+            user.setOwnerRealEstateIds(realEstateRepository.findAllById(realEstateIds));
+        }
+        if (role.equals("resident")) {
+            user.setResidentRealEstateIds(realEstateRepository.findAllById(realEstateIds));
+        }
         userRepository.save(user);
     }
 }
