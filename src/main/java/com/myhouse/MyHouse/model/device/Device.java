@@ -1,4 +1,4 @@
-package com.myhouse.MyHouse.model;
+package com.myhouse.MyHouse.model.device;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +15,12 @@ public class Device {
     private String id;
     private String name;
     private String description;
+    private DeviceType type;
+
+    public Device(String name, String description, DeviceType type) {
+        this.name = name;
+        this.description = description;
+        this.type = type;
+    }
 }
 

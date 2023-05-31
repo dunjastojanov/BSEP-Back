@@ -1,4 +1,4 @@
-package com.myhouse.MyHouse.model;
+package com.myhouse.MyHouse.model.device;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
