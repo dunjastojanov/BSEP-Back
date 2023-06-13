@@ -3,6 +3,7 @@ package com.myhouse.MyHouse.service;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
 import com.myhouse.MyHouse.model.device.Device;
 import com.myhouse.MyHouse.model.device.DeviceMessage;
+import com.myhouse.MyHouse.model.device.DeviceMessageType;
 import com.myhouse.MyHouse.repository.DeviceMessageRepository;
 import com.myhouse.MyHouse.repository.DeviceRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,5 +31,13 @@ public class DeviceMessageService {
             throw new NotFoundException("Device with id " + deviceId + " not found");
 
         return deviceMessageRepository.findAllByDeviceId(maybeDevice.get());
+    }
+
+    public List<DeviceMessage> getMessagesByType(DeviceMessageType type) {
+        return deviceMessageRepository.findAllByType(type);
+    }
+
+    public List<DeviceMessage> getAllMessages() {
+        return deviceMessageRepository.findAll();
     }
 }
