@@ -21,7 +21,7 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
-    @PostMapping(path = "/{realEstateId}/device")
+    @GetMapping(path = "/{realEstateId}/device")
     @PreAuthorize("hasAuthority('admin:read')")
     public ResponseEntity<?> getDevicesByRealestateId(@PathVariable String realEstateId) {
         try {
@@ -44,7 +44,7 @@ public class DeviceController {
         }
     }
 
-    @PostMapping(path = "/{realEstateId}/device")
+    @DeleteMapping(path = "/{realEstateId}/device")
     @PreAuthorize("hasAuthority('admin:delete')")
     public ResponseEntity<?> removeDeviceFromRealEstateConfiguration(@PathVariable String realEstateId,
                                                                      @RequestBody Device device) {

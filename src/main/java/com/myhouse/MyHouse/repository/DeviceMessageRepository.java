@@ -3,8 +3,10 @@ package com.myhouse.MyHouse.repository;
 import com.myhouse.MyHouse.model.device.Device;
 import com.myhouse.MyHouse.model.device.DeviceMessage;
 import com.myhouse.MyHouse.model.device.DeviceMessageType;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DeviceMessageRepository extends MongoRepository<DeviceMessage, String> {
