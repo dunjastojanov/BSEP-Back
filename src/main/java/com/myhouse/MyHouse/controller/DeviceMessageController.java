@@ -6,11 +6,14 @@ import com.myhouse.MyHouse.model.device.DeviceMessage;
 import com.myhouse.MyHouse.model.device.DeviceMessageType;
 import com.myhouse.MyHouse.service.DeviceMessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/device/message")
@@ -37,6 +40,23 @@ public class DeviceMessageController {
     @PreAuthorize("hasAuthority('admin:read')")
     public ResponseEntity<?> getAllMessagesByType(@PathVariable DeviceMessageType type) {
         return ResponseEntity.ok(deviceMessageService.getMessagesByType(type));
+    }
+
+    @GetMapping(value = "/search")
+    @PreAuthorize("hasAuthority('admin:read')")
+    public ResponseEntity<?> searchMessages(
+            @RequestParam Optional<DeviceMessageType> type,
+            @RequestParam Optional<String> deviceId,
+            @RequestParam Optional<String> content,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDateTime> from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Optional<LocalDateTime> to
+    ) {
+        try {
+            return ResponseEntity.ok(deviceMessageService.searchDeviceMessages(type, deviceId, content, from, to));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+
     }
 
     @GetMapping(value = "/device/{deviceId}")

@@ -61,7 +61,7 @@ public class DeviceController {
         }
     }
 
-    @PostMapping
+    @GetMapping(path = "/device")
     @PreAuthorize("hasAuthority('admin:read')")
     public ResponseEntity<List<Device>> getAllDevice() {
         return ResponseEntity.ok(deviceService.getAll());
