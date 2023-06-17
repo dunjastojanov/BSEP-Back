@@ -4,7 +4,6 @@ import com.myhouse.MyHouse.dto.NewDeviceMessageDto;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
 import com.myhouse.MyHouse.model.RealEstateConfiguration;
 import com.myhouse.MyHouse.model.Role;
-import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.model.device.Device;
 import com.myhouse.MyHouse.model.device.DeviceMessage;
 import com.myhouse.MyHouse.model.device.DeviceMessageType;
@@ -13,7 +12,6 @@ import com.myhouse.MyHouse.repository.DeviceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +33,7 @@ public class DeviceMessageService {
             throw new NotFoundException("Device with given id doesn't exist.");
         }
 
-        deviceMessageRepository.save(new DeviceMessage(optional.get(), message.timestamp(), message.content(), message.type()));
+        deviceMessageRepository.save(new DeviceMessage(optional.get(), message.timestamp(), message.content(), message.type(), message.value()));
     }
 
     public List<DeviceMessage> getMessagesByDevice(String deviceId) {

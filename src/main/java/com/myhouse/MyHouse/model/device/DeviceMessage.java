@@ -1,6 +1,5 @@
 package com.myhouse.MyHouse.model.device;
 
-import com.myhouse.MyHouse.dto.NewDeviceMessageDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,11 +21,13 @@ public class DeviceMessage {
     private LocalDateTime timestamp;
     private String content;
     private DeviceMessageType type;
+    private int value;
 
-    public DeviceMessage(Device deviceId, LocalDateTime timestamp, String content, DeviceMessageType type) {
+    public DeviceMessage(Device deviceId, LocalDateTime timestamp, String content, DeviceMessageType type, int value) {
         this.deviceId = deviceId;
         this.timestamp = timestamp;
         this.content = content;
         this.type = type;
+        this.value = value;
     }
 }
