@@ -8,6 +8,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -344,14 +346,11 @@ public class TokenUtils {
         final String username = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
 
-        // Token je validan kada:
         boolean isUsernameValid = username != null // korisnicko ime nije null
                 && user.isEnabled()
                 && username.equals(userDetails.getUsername()) // korisnicko ime iz tokena se podudara sa korisnickom imenom koje pise u bazi
                 && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate()); // nakon kreiranja tokena korisnik nije menjao svoju lozinku
 
-        // Validiranje fingerprint-a
-        System.out.println("FGP ===> " + fingerprint);
         boolean isFingerprintValid = false;
         boolean isAlgorithmValid = false;
         if (fingerprint != null) {

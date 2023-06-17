@@ -6,6 +6,8 @@ import com.myhouse.MyHouse.dto.RealEstateConfigurationDto;
 import com.myhouse.MyHouse.exceptions.NotFoundException;
 import com.myhouse.MyHouse.model.RealEstate;
 import com.myhouse.MyHouse.model.RealEstateConfiguration;
+import com.myhouse.MyHouse.model.Role;
+import com.myhouse.MyHouse.model.User;
 import com.myhouse.MyHouse.model.device.Device;
 import com.myhouse.MyHouse.repository.DeviceRepository;
 import com.myhouse.MyHouse.repository.RealEstateConfigurationRepository;
@@ -14,8 +16,11 @@ import lombok.RequiredArgsConstructor;
 import org.owasp.encoder.Encode;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -24,6 +29,7 @@ public class RealEstateConfigurationService {
     private final DeviceRepository deviceRepository;
     private final RealEstateConfigurationRepository realEstateConfigurationRepository;
     private final RealEstateRepository realEstateRepository;
+    private final UserService userService;
 
     public List<RealEstateConfiguration> getAll() {
         return realEstateConfigurationRepository.findAll();
@@ -53,17 +59,16 @@ public class RealEstateConfigurationService {
     public RealEstateConfiguration getRealEstateConfigurationByRealEstateId(String realEstateId) {
         Optional<RealEstate> realEstate = realEstateRepository.findById(realEstateId);
 
-        if(realEstate.isEmpty())
+        if (realEstate.isEmpty())
             throw new NotFoundException("Real estate with id " + realEstateId + " not found");
 
         Optional<RealEstateConfiguration> maybeConfig = realEstateConfigurationRepository.findFirstByRealEstate(realEstate.get());
 
-        if(maybeConfig.isEmpty())
+        if (maybeConfig.isEmpty())
             throw new NotFoundException("Real estate configuration of real estate id " + realEstateId + " not found");
 
         return maybeConfig.get();
     }
-
     public RealEstateConfiguration addDeviceToRealEstateConfiguration(String realEstateId, NewDeviceDto newDevice) {
         RealEstateConfiguration config = getRealEstateConfigurationByRealEstateId(realEstateId);
 
@@ -74,10 +79,14 @@ public class RealEstateConfigurationService {
         return config;
     }
 
-    public boolean removeDeviceFromRealEstateConfiguration(String realEstateId, Device device) {
+    public boolean removeDeviceFromRealEstateConfiguration(String realEstateId, String deviceId) {
         RealEstateConfiguration config = getRealEstateConfigurationByRealEstateId(realEstateId);
-        config.getDevices().remove(device);
-        deviceRepository.delete(device);
+        Optional<Device> optional = deviceRepository.findById(deviceId);
+        if (optional.isEmpty()) {
+            throw new EntityNotFoundException("Device not found.");
+        }
+        config.getDevices().remove(optional.get());
+        deviceRepository.deleteById(deviceId);
         realEstateConfigurationRepository.save(config);
         return true;
     }
@@ -109,5 +118,16 @@ public class RealEstateConfigurationService {
             throw new NotFoundException("Real estate configuration with id " + id + " not found");
 
         return maybeConfig.get();
+    }
+
+    public List<RealEstateConfiguration> getRealEstateConfigurationForUser(String userId, String type) {
+        User user = userService.findById(userId);
+        if (Objects.equals(type, Role.OWNER.name()) && user.getRoles().contains(Role.OWNER)) {
+            return user.getOwnerRealEstateIds().stream().map(realEstate -> getRealEstateConfigurationByRealEstateId(realEstate.getId())).toList();
+        }
+        if (Objects.equals(type, Role.RESIDENT.name()) && user.getRoles().contains(Role.RESIDENT)) {
+            return user.getResidentRealEstateIds().stream().map(realEstate -> getRealEstateConfigurationByRealEstateId(realEstate.getId())).toList();
+        }
+        return new ArrayList<>();
     }
 }
