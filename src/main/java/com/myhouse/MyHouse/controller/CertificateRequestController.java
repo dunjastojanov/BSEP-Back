@@ -2,6 +2,7 @@ package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.cerificate.CertificateRequestDTO;
 import com.myhouse.MyHouse.dto.cerificate.RejectionReasonDTO;
+import com.myhouse.MyHouse.logging.LogSuccess;
 import com.myhouse.MyHouse.service.CertificateRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ public class CertificateRequestController {
 
     @PutMapping(path = "{id}")
     @PreAuthorize("hasAuthority('admin:update')")
+    @LogSuccess(message = "Certificate request rejected.")
     public ResponseEntity<?> rejectCertificateCreation(@RequestBody RejectionReasonDTO rejectionReasonDTO) {
         certificateRequestService.rejectCertificateCreation(rejectionReasonDTO);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -25,6 +27,7 @@ public class CertificateRequestController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('owner:write','resident:write')")
+    @LogSuccess(message = "Certificate request created.")
     public ResponseEntity<?> createRequestForClientCertificate(@RequestBody CertificateRequestDTO certificateRequestDTO) {
         certificateRequestService.createRequestForCertificate(certificateRequestDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);

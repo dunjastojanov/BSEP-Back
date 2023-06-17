@@ -1,6 +1,7 @@
 package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.user.LoginDTO;
+import com.myhouse.MyHouse.logging.LogSuccess;
 import com.myhouse.MyHouse.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,11 +18,13 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping(path = "/login")
+    @LogSuccess(message = "Login successful.")
     public ResponseEntity<?> login(@RequestBody @Valid LoginDTO loginDTO, HttpServletResponse httpServletResponse) {
         return ResponseEntity.ok(authService.createAuthenticationToken(loginDTO, httpServletResponse));
     }
 
     @GetMapping(path = "/logout")
+    @LogSuccess(message = "Logout successful.")
     public void logout(HttpServletRequest request) {
         authService.storeJwtAsInvalid(request);
     }

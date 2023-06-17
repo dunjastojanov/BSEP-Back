@@ -1,6 +1,7 @@
 package com.myhouse.MyHouse.controller;
 
 
+import com.myhouse.MyHouse.logging.LogSuccess;
 import com.myhouse.MyHouse.service.RealEstateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,7 @@ public class RealEstateController {
     }
 
     @PostMapping("/{name}")
+    @LogSuccess(message = "Created real estate.")
     @PreAuthorize("hasAuthority('admin:write')")
     public ResponseEntity<?> createRealEstate(@PathVariable String name) {
         return ResponseEntity.ok(realEstateService.createRealEstate(name));
@@ -41,6 +43,7 @@ public class RealEstateController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin:delete')")
+    @LogSuccess(message = "Deleted real estate.")
     public ResponseEntity<?> deleteById(@PathVariable String id) {
         realEstateService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);

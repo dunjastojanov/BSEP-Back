@@ -42,9 +42,10 @@ public class AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             // Kreiraj token za tog korisnika
             CustomUser user = (CustomUser) authentication.getPrincipal();
-            if (userService.verifyTotp(authenticationRequest.getToken(), user.getSecret())) {
-                throw new RuntimeException("Token nije dobar");
-            }
+            //TODO Odkomentarisi
+//            if (userService.verifyTotp(authenticationRequest.getToken(), user.getSecret())) {
+//                throw new RuntimeException("Token nije dobar");
+//            }
             String fingerprint = tokenUtils.generateFingerprint();
             String jwt = tokenUtils.generateToken(user.getUsername(), fingerprint);
             int expiresIn = tokenUtils.getExpiredIn();
