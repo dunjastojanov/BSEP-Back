@@ -130,4 +130,8 @@ public class RealEstateConfigurationService {
         }
         return new ArrayList<>();
     }
+
+    public void deleteById(String id) {
+        realEstateConfigurationRepository.deleteById(id);
+    }
 }
