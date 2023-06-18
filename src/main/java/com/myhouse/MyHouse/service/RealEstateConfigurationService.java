@@ -89,8 +89,6 @@ public class RealEstateConfigurationService {
 
         boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
 
-        System.out.println("Json write success: " + writeSuccess);
-
         return realEstateConfiguration;
     }
 
@@ -105,7 +103,6 @@ public class RealEstateConfigurationService {
         RealEstateConfiguration realEstateConfiguration = realEstateConfigurationRepository.save(config);
 
         boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
-        System.out.println("Json write success: " + writeSuccess);
 
         return true;
     }
@@ -125,8 +122,6 @@ public class RealEstateConfigurationService {
         RealEstateConfiguration realEstateConfiguration = realEstateConfigurationRepository.save(config);
 
         boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
-
-        System.out.println("Json write success: " + writeSuccess);
 
         return realEstateConfiguration;
     }
@@ -165,5 +160,9 @@ public class RealEstateConfigurationService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void deleteById(String id) {
+        realEstateConfigurationRepository.deleteById(id);
     }
 }

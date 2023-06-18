@@ -25,4 +25,8 @@ public class AlarmRuleService {
     public List<AlarmRule> getRules() {
         return alarmRuleRepository.findAll();
     }
+
+    public void deleteRule(String id) {
+        alarmRuleRepository.deleteById(id);
+    }
 }
