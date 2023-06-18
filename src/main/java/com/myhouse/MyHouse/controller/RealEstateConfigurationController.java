@@ -89,6 +89,7 @@ public class RealEstateConfigurationController {
 
 
     @DeleteMapping("/{id}")
+    @LogSuccess(message = "Deleted real estate configuration.")
     public ResponseEntity<?> deleteRealEstateConfiguration(@PathVariable String id) {
         try {
             realEstateConfigurationService.deleteById(id);
