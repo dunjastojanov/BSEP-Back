@@ -1,0 +1,38 @@
+{
+    "id": "507f191e810c19729de860ea",
+    "realEstate": "64870cb5f669de2e532903bb",
+    "messageInterval": 5,
+    "filter": ".*",
+    "devices": [
+        {
+            "id": "64870d33b6dde1beafc143f6",
+            "name": "Door bell",
+            "description": "ring door bell",
+            "type": "DOOR_BELL"
+        },
+        {
+            "id": "64870dbaaa7a962eb4d41042",
+            "name": "Thermostat",
+            "description": "Living room thermostat",
+            "type": "THERMOSTAT"
+        },
+        {
+            "id": "64870db79faa8a05e80850f5",
+            "name": "Camera",
+            "description": "back door camera",
+            "type": "CAMERA"
+        },
+        {
+            "id": "64870db597e52c93f39e3aa8",
+            "name": "Light switch",
+            "description": "kitchen",
+            "type": "LIGHT_SWITCH"
+        },
+        {
+            "id": "64870db2a11b7b98580696d3",
+            "name": "Light switch",
+            "description": "living room",
+            "type": "LIGHT_SWITCH"
+        }
+    ]
+}

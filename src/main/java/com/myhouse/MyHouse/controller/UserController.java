@@ -1,9 +1,9 @@
 package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.user.RegistrationDTO;
+import com.myhouse.MyHouse.logging.LogSuccess;
 import com.myhouse.MyHouse.service.UserService;
 import dev.samstevens.totp.exceptions.QrGenerationException;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +39,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin:delete')")
+    @LogSuccess(message = "Deleted user.")
     public ResponseEntity<?> deleteById(@PathVariable String id) {
         userService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -46,17 +47,20 @@ public class UserController {
 
     @PutMapping("/roles/{id}")
     @PreAuthorize("hasAuthority('admin:update')")
+    @LogSuccess(message = "Updated user roles.")
     ResponseEntity<?> updateUserRoles(@PathVariable String id, @RequestBody List<String> roles) {
         return ResponseEntity.ok(userService.updateUserRole(id, roles));
     }
     @PutMapping("/realestates/{role}/{id}")
     @PreAuthorize("hasAuthority('admin:update')")
+    @LogSuccess(message = "Updated user real estates.")
     ResponseEntity<?> updateUserRealEstates(@PathVariable String id,@PathVariable String role, @RequestBody List<String> realEstateIds) {
         userService.updateUserRealEstates(id,role, realEstateIds);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping(path = "register")
+    @LogSuccess(message = "Registered user.")
     public ResponseEntity<?> register(@RequestBody @Valid RegistrationDTO registrationDTO) {
         try {
             userService.createUser(registrationDTO);
@@ -67,6 +71,7 @@ public class UserController {
     }
 
     @GetMapping("/register/verification/{token}")
+    @LogSuccess(message = "Verified user.")
     public ResponseEntity<String> verifyUserRegistration(@PathVariable String token) {
         return ResponseEntity.ok(userService.verifyUserRegistration(token));
     }

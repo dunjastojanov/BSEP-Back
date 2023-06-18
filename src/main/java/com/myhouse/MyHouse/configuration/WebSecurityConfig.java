@@ -64,6 +64,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/login","/api/user/register/verification/**").permitAll()
                 .requestMatchers(HttpMethod.POST,"/api/user/register").permitAll()
                 .requestMatchers(HttpMethod.GET,"/api/user/mfa/setup/**").permitAll()
+                .requestMatchers(HttpMethod.POST,"/api/device/message").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new TokenAuthorizationFilter(tokenUtils, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);

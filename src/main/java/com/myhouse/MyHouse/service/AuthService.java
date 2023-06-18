@@ -42,6 +42,7 @@ public class AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             // Kreiraj token za tog korisnika
             CustomUser user = (CustomUser) authentication.getPrincipal();
+            //TODO Odkomentarisi
             if (userService.verifyTotp(authenticationRequest.getToken(), user.getSecret())) {
                 throw new RuntimeException("Token nije dobar");
             }

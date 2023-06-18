@@ -2,6 +2,7 @@ package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.cerificate.CertificateInfoDTO;
 import com.myhouse.MyHouse.dto.cerificate.NewCertificateDataDTO;
+import com.myhouse.MyHouse.logging.LogSuccess;
 import com.myhouse.MyHouse.service.CertificateService;
 import com.myhouse.MyHouse.util.KeyStoreManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +28,20 @@ public class CertificateController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('admin:write')")
+    @LogSuccess(message = "Certificate created.")
     public ResponseEntity<?> createNewCertificate(@RequestBody NewCertificateDataDTO newCertificateDataDTO) {
         return ResponseEntity.ok(certificateService.createNewCertificate(newCertificateDataDTO));
     }
 
     @GetMapping(path = "{alias}")
     @PreAuthorize("hasAuthority('admin:update')")
+    @LogSuccess(message = "Certificate verified.")
     public ResponseEntity<Boolean> verifyCertificate(@PathVariable String alias) {
         return ResponseEntity.ok(certificateService.verifyCertificate(alias));
     }
     @PostMapping(path = "distribute")
     @PreAuthorize("hasAuthority('admin:read')")
+    @LogSuccess(message = "Certificate distributed.")
     public ResponseEntity<?> distributeCert(@RequestParam String userEmail) {
         if(certificateService.distributeCertificate(userEmail))
             return ResponseEntity.ok().build();
@@ -46,6 +50,7 @@ public class CertificateController {
     }
     @PostMapping(path = "info")
     @PreAuthorize("hasAuthority('admin:write')")
+    @LogSuccess(message = "Certificate info created.")
     public void createCertificateInfo(@RequestBody CertificateInfoDTO certificateInfoDTO) throws ParseException {
         certificateService.createCertificateInfo(certificateInfoDTO);
     }
@@ -60,6 +65,7 @@ public class CertificateController {
 
     @PutMapping(path = "invalidate/{id}")
     @PreAuthorize("hasAuthority('admin:update')")
+    @LogSuccess(message = "Certificate invalidated.")
     public ResponseEntity<?> invalidate(@PathVariable String id){
         return ResponseEntity.ok(certificateService.invalidate(id));
     }

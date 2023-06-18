@@ -1,0 +1,41 @@
+import com.myhouse.MyHouse.model.*;
+import com.myhouse.MyHouse.model.device.*;
+import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+
+rule "Error log"
+    when
+        $l: Log(level == "ERROR")
+    then
+    insert(new DeviceMessage(null, new Date(), $l.getMessage(), DeviceMessageType.ALARM, -1));
+end
+
+rule "Device message error"
+    when
+        $m1: DeviceMessage(did1: deviceId, type == DeviceMessageType.ERROR)
+        $m2: DeviceMessage(this != $m1, deviceId == did1, type == DeviceMessageType.ERROR, this meets[10m] $m1)
+        $m3: DeviceMessage(this != $m1, this != $m2, deviceId == did1, type == DeviceMessageType.ERROR, this meets[10m] $m1)
+    then
+        String content = "ALARM: device " + did1.getName() + " with id " + did1.getId() + " has had 3 error messages in 10 minutes.";
+        insert(new DeviceMessage(did1, new Date(), content, DeviceMessageType.ALARM, -1));
+        delete($m1);
+        delete($m2);
+        delete($m3);
+end
+
+rule "Custom device message alarm rule"
+    when
+        $ar: AlarmRule()
+        $m1: DeviceMessage(type == $ar.messageType, value > $ar.value, deviceId.type == $ar.deviceType)
+        $count: Number() from accumulate(
+                DeviceMessage(type == $ar.messageType, value > $ar.value, deviceId.type == $ar.deviceType, deviceId == $m1.deviceId),
+                count(1)
+        )
+        eval($count.intValue() >= $ar.getAmountOfMessages())
+    then
+    System.out.println("Custom rule fired!");
+    String content = "ALARM: device " + $m1.getDeviceId().getName() + " with id " + $m1.getDeviceId().getId() + " has had " + $count + " values over " + $ar.getValue() + ".";
+    insert(new DeviceMessage($m1.getDeviceId(), new Date(), content, DeviceMessageType.ALARM, -1));
+    delete($m1);
+end

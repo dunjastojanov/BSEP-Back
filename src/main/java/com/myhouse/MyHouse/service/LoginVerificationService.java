@@ -38,7 +38,7 @@ public class LoginVerificationService {
 
     public boolean verifyTotp(String code, String secret) {
         GoogleAuthenticator authenticator = new GoogleAuthenticator();
-        int verificationCode = authenticator.getTotpPassword(secret);
+
         return authenticator.authorize(secret, Integer.parseInt(code));
     }
 }
