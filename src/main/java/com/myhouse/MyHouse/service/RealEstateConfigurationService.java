@@ -1,5 +1,6 @@
 package com.myhouse.MyHouse.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myhouse.MyHouse.dto.NewDeviceDto;
 import com.myhouse.MyHouse.dto.NewRealEstateConfigurationDto;
 import com.myhouse.MyHouse.dto.RealEstateConfigurationDto;
@@ -17,6 +18,10 @@ import org.owasp.encoder.Encode;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,13 +52,19 @@ public class RealEstateConfigurationService {
                         .map(device -> new Device(Encode.forHtml(device.name()), Encode.forHtml(device.description()), device.type()))
                         .toList());
 
-        return realEstateConfigurationRepository.save(new RealEstateConfiguration(
+        RealEstateConfiguration realEstateConfiguration = realEstateConfigurationRepository.save(new RealEstateConfiguration(
                 realEstate.get(),
                 devices,
                 realEstateConfigurationDto.filter(),
                 Duration.of(realEstateConfigurationDto.messageIntervalDuration(),
                         realEstateConfigurationDto.messageIntervalUnit())
         ));
+
+        boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
+
+        System.out.println("Json write success: " + writeSuccess);
+
+        return realEstateConfiguration;
     }
 
     public RealEstateConfiguration getRealEstateConfigurationByRealEstateId(String realEstateId) {
@@ -74,9 +85,13 @@ public class RealEstateConfigurationService {
 
         Device device = deviceRepository.save(new Device(newDevice.name(), newDevice.description(), newDevice.type()));
         config.getDevices().add(device);
-        realEstateConfigurationRepository.save(config);
+        RealEstateConfiguration realEstateConfiguration = realEstateConfigurationRepository.save(config);
 
-        return config;
+        boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
+
+        System.out.println("Json write success: " + writeSuccess);
+
+        return realEstateConfiguration;
     }
 
     public boolean removeDeviceFromRealEstateConfiguration(String realEstateId, String deviceId) {
@@ -87,7 +102,11 @@ public class RealEstateConfigurationService {
         }
         config.getDevices().remove(optional.get());
         deviceRepository.deleteById(deviceId);
-        realEstateConfigurationRepository.save(config);
+        RealEstateConfiguration realEstateConfiguration = realEstateConfigurationRepository.save(config);
+
+        boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
+        System.out.println("Json write success: " + writeSuccess);
+
         return true;
     }
 
@@ -103,8 +122,13 @@ public class RealEstateConfigurationService {
         config.setMessageInterval(Duration.of(realEstateConfigurationDto.messageIntervalDuration(),
                 realEstateConfigurationDto.messageIntervalUnit()));
         config.setFilter(realEstateConfigurationDto.filter());
-        realEstateConfigurationRepository.save(config);
-        return config;
+        RealEstateConfiguration realEstateConfiguration = realEstateConfigurationRepository.save(config);
+
+        boolean writeSuccess = updateOrCreateConfigurationFile(realEstateConfiguration);
+
+        System.out.println("Json write success: " + writeSuccess);
+
+        return realEstateConfiguration;
     }
 
     public List<Device> getDevicesByRealEstateId(String realEstateId) {
@@ -129,5 +153,17 @@ public class RealEstateConfigurationService {
             return user.getResidentRealEstateIds().stream().map(realEstate -> getRealEstateConfigurationByRealEstateId(realEstate.getId())).toList();
         }
         return new ArrayList<>();
+    }
+
+    private boolean updateOrCreateConfigurationFile(RealEstateConfiguration config) {
+        try {
+            RealEstateConfigurationDto configJson = new RealEstateConfigurationDto(config);
+            Files.createDirectories(Paths.get("./config/"));
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.writeValue(new File("./config/config_" + configJson.id() + ".json"), configJson);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

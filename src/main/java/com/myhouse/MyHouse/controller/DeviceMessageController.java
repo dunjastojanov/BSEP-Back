@@ -2,7 +2,6 @@ package com.myhouse.MyHouse.controller;
 
 import com.myhouse.MyHouse.dto.NewDeviceMessageDto;
 import com.myhouse.MyHouse.logging.LogSuccess;
-import com.myhouse.MyHouse.model.device.DeviceMessage;
 import com.myhouse.MyHouse.model.device.DeviceMessageType;
 import com.myhouse.MyHouse.service.DeviceMessageService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -21,12 +20,11 @@ import java.util.Optional;
 public class DeviceMessageController {
 
     private final DeviceMessageService deviceMessageService;
-
     @PostMapping
     @LogSuccess(message = "Device message added.")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<?> addDeviceMessage(@RequestBody @Valid NewDeviceMessageDto message) {
-        deviceMessageService.logMessage(message);
+    public ResponseEntity<?> addDeviceMessage(@RequestBody NewDeviceMessageDto message) {
+        deviceMessageService.logMessageAndSendAlarms(message);
         return ResponseEntity.ok().build();
     }
 

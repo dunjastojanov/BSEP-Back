@@ -6,6 +6,7 @@ import time
 import keyboard
 import random
 import re
+import os
 
 from datetime import datetime
 
@@ -77,9 +78,9 @@ MESSAGE_ENDPOINT = "http://localhost:8080/api/device/message"
 MESSAGE_ENDPOINT_HTTPS = "https://localhost:8080/api/device/message"
 
 def valueChanged(name: str, type: str, unit: str, value: int):
-    match (type, value):
-        case ("CAMERA", 2): return f"{name} ({type}) detected movement. Value: {value}."
-        case _: return f"{name} ({type}) {unit} changed. Value: {value}."
+    # match (type, value):
+    #     case ("CAMERA", 2): return f"{name} ({type}) detected movement. Value: {value}." case _: 
+    return f"{name} ({type}) {unit} changed. Value: {value}."
 
 def deviceOn(name, type):
     return f"{name} ({type}) switched on."
@@ -95,36 +96,44 @@ def print_successfull_message_post(message: dict):
     deviceId: {message["deviceId"]}
     timestamp: {message["timestamp"]}
     content: {message["content"]}
-    deviceMessageType: {message["deviceMessageType"]}
+    deviceMessageType: {message["type"]}
     value: {message["value"]}
 """)
 
 def get_device_message(device, mode):
     t = datetime.now()
+    
+    device_values_and_units = DEVICE_TYPES[device['type']]
 
     if mode == 'normal' or random.random() < 0.4:
-        device_values_and_units = DEVICE_TYPES[device['type']]
         val = random.choice(device_values_and_units['values'])
         unit = device_values_and_units['unit']
         message_type = "INFO"
         if random.random() > 0.3:
-            content = f"[{t.strftime('%Y-%M-%dT%H:%M:%S')}] [{message_type:^6}] {valueChanged(device['name'], device['type'], unit, val)}"
+            content = f"[{t.strftime('%Y-%m-%dT%H:%M:%S')}] [{message_type:^6}] {valueChanged(device['name'], device['type'], unit, val)}"
         elif random.random() > 0.5:
-            content = f"[{t.strftime('%Y-%M-%dT%H:%M:%S')}] [{message_type:^6}] {deviceOn(device['name'], device['type'])}"
+            content = f"[{t.strftime('%Y-%m-%dT%H:%M:%S')}] [{message_type:^6}] {deviceOn(device['name'], device['type'])}"
         else:
-            content = f"[{t.strftime('%Y-%M-%dT%H:%M:%S')}] [{message_type:^6}] {deviceOff(device['name'], device['type'])}"
+            content = f"[{t.strftime('%Y-%m-%dT%H:%M:%S')}] [{message_type:^6}] {deviceOff(device['name'], device['type'])}"
 
     elif mode == "error" or random.radnom() < 0.025:
-        val = -1
-        message_type = "ERROR"
-        content = f"[{t.strftime('%Y-%M-%dT%H:%M:%S')}] [ ERROR ] {deviceError(device['name'], device['type'])}"
+        if random.random() < 0.5:
+            val = -1
+            message_type = "ERROR"
+            content = f"[{t.strftime('%Y-%m-%dT%H:%M:%S')}] [ ERROR ] {deviceError(device['name'], device['type'])}"
+        else:
+            val = 30
+            message_type = "INFO"
+            unit = device_values_and_units['unit']
+            content = f"[{t.strftime('%Y-%m-%dT%H:%M:%S')}] [ INFO ] {valueChanged(device['name'], device['type'], unit, val)}"
+
 
 
     return {
         "deviceId": device["id"],
-        "timestamp": t.strftime("%Y-%M-%dT%H:%M:%S"),
+        "timestamp": t.strftime("%Y-%m-%dT%H:%M:%S"),
         "content": content,
-        "deviceMessageType": message_type,
+        "type": message_type,
         "value": val
     }
 
@@ -152,7 +161,7 @@ def simulate_device(device, messageInterval, regexFilter, mode, cert_file):
 
 def simulate(config: dict, mode, cert_file):
     device_threads = []
-    message_interval = config["messageInterval"]
+    message_interval = config["messageIntervalDuration"]
     f = config["filter"]
     devices = config["devices"]
         
@@ -172,12 +181,24 @@ def simulate(config: dict, mode, cert_file):
         print(f"Main    : thread {index} done")
 
 
-def main(config_file: str, mode: str, cert_file):
-    config = {}
-    with open(config_file) as config_file:
-        config = json.load(config_file)["config"]
+def main(config_file_directory: str, mode: str, cert_file):
+    configs = []
 
-    simulate(config, mode, cert_file)
+    config_files = os.listdir(config_file_directory)
+
+    for file in config_files:
+        with open(os.path.join(config_file_directory, file)) as f:
+            configs.append(json.load(f))
+
+    config_threads = []
+
+    for config in configs:
+        t = threading.Thread(target=simulate, args=(config, mode, cert_file))
+        print(f"Launching thread {len(config_threads)}.")
+        config_threads.append(t)
+        t.start()
+
+    # simulate(config, mode, cert_file)
     print("Simulation successfully stopped.\nExiting...")
     exit(0)
 
@@ -186,9 +207,10 @@ if __name__ == "__main__":
         exit("Error, not enough parameters\nCommand execution should look like:\npython device_simulation_script.py <path_to_config> <mode> <path_to_cert>\nWhere mode is either 'normal' or 'error'")
 
     try:
-        config_file = sys.argv[1]
+        config_file_directory = sys.argv[1]
         mode = 'normal' if len(sys.argv) != 4 else sys.argv[2]
         cert_file = sys.argv[3]
-        main(config_file=config_file, mode=mode, cert_file=cert_file)
-    except Exception:
-        exit("Error, not enough parameters\nCommand execution should look like:\npython device_simulation_script.py <path_to_config> <mode> <path_to_cert>\nWhere mode is either 'normal' or 'error'")
+        main(config_file_directory=config_file_directory, mode=mode, cert_file=cert_file)
+    except KeyboardInterrupt:
+        exit("Exiting...")
+    #     exit("Error, not enough parameters\nCommand execution should look like:\npython device_simulation_script.py <path_to_config> <mode> <path_to_cert>\nWhere mode is either 'normal' or 'error'")
